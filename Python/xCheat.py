@@ -894,3 +894,18 @@ def GetPlayerID(self):
     import Plasma
     playerID = Plasma.PtGetLocalPlayer().getPlayerID()
     print "playerID = ",playerID
+
+def setHomeAge(ageName):
+    import Plasma
+    import PlasmaTypes
+    import PlasmaKITypes
+
+    vault = Plasma.ptVault()
+    entry = vault.findChronicleEntry(PlasmaKITypes.kChronicleHomeAge)
+    if entry is None:
+        PlasmaTypes.PtDebugPrint("xCheat.setHomeAge(): {} Chronicle not found.  Setting to Age: {}".format(PlasmaKITypes.kChronicleHomeAge, ageName))
+        vault.addChronicleEntry(kChronicleHomeAge, kChronicleHomeAgeType, ageName)
+    else:
+        PlasmaTypes.PtDebugPrint("xCheat.setHomeAge(): {} Chronicle found.  Setting to Age: {} (was: {})".format(PlasmaKITypes.kChronicleHomeAge, ageName, entry.chronicleGetValue()))
+        entry.chronicleSetValue(ageName)
+        entry.save()

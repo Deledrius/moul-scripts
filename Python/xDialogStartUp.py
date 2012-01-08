@@ -559,15 +559,23 @@ class xDialogStartUp(ptResponder):
             ageInfo = ptAgeInfoStruct()
 
             vault = ptVault()
-            entry = vault.findChronicleEntry("InitialAvCustomizationsDone")
-            if type(entry) != type(None):
-                ageInfo.setAgeFilename("Personal")
+            avatarDone = vault.findChronicleEntry("InitialAvCustomizationsDone")
+            homeAge = vault.findChronicleEntry(kChronicleHomeAge)
+            if avatarDone is not None:
+                if homeAge is None:
+                    PtDebugPrint("xDialogStartUp.OnAccountUpdate(): {} Chronicle not found.  Setting to Age: {}".format(kChronicleHomeAge, "Personal"))
+                    vault.addChronicleEntry(kChronicleHomeAge, kChronicleHomeAgeType, "Personal")
+                    homeAge = vault.findChronicleEntry(kChronicleHomeAge)
+                    ageInfo.setAgeFilename(homeAge.chronicleGetValue())
+                else:
+                    PtDebugPrint("xDialogStartUp.OnAccountUpdate(): {} Chronicle found.  Currently set to Age: {}".format(kChronicleHomeAge, homeAge.chronicleGetValue()))
+                    ageInfo.setAgeFilename(homeAge.chronicleGetValue())
             else:
                 ageInfo.setAgeFilename("AvatarCustomization")
             self.ageLink.setAgeInfo(ageInfo)
             self.ageLink.setLinkingRules(PtLinkingRules.kOwnedBook)
 
-            print "Linking to %s" % (self.ageLink.getAgeInfo().getAgeFilename())
+            PtDebugPrint("Linking to {}".format(self.ageLink.getAgeInfo().getAgeFilename()))
             respLinkOutSND.run(self.key)
             ptNetLinkingMgr().linkToAge(self.ageLink)
             self.ageLink = None
