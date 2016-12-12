@@ -141,7 +141,7 @@ class xJourneyClothGate(ptResponder):
         if not state:
             return
         
-        print "##"
+        print("##")
 
         if id == rgnLink.id:
             vault = ptVault()
@@ -179,7 +179,7 @@ class xJourneyClothGate(ptResponder):
                 except:
                     PtDebugPrint("ERROR: xJourneyClothGate.OnServerInitComplete():\tERROR reading age SDL")
             
-            print "OnNotify: GateCurrentlyClosed = " , GateCurrentlyClosed
+            print("OnNotify: GateCurrentlyClosed = " , GateCurrentlyClosed)
             if not GateCurrentlyClosed:
                 PtDebugPrint ("The gate is already open.")
                 return
@@ -222,10 +222,10 @@ class xJourneyClothGate(ptResponder):
         PtAtTimeCallback(self.key,5,TimerID.kResetGate)         
 
         if not PtWasLocallyNotified(self.key):
-            print "Somebody touched the Journey Cloth Gate"
+            print("Somebody touched the Journey Cloth Gate")
             return
 
-        print "You clicked on the Gate"
+        print("You clicked on the Gate")
         vault = ptVault()
         if type(vault) != type(None): #is the Vault online?
             
@@ -242,23 +242,23 @@ class xJourneyClothGate(ptResponder):
                 length = len(FoundJCs)
                 all = len(AllCloths)
 
-                print "You've found the following %d Journey Cloths: %s" % (length, FoundJCs)
+                print("You've found the following %d Journey Cloths: %s" % (length, FoundJCs))
                 
                 if length < 0 or length > all: 
-                    print "xJourneyClothGate: ERROR: Unexpected length value received."
+                    print("xJourneyClothGate: ERROR: Unexpected length value received.")
                     return
                     
                 for each in FoundJCs:
                     if each not in AllCloths:
-                        print "Unexpected value in the Chronicle:", each
+                        print("Unexpected value in the Chronicle:", each)
                         return
 
                 if length < all:
-                    print "There are more Cloths out there. Get to work."
+                    print("There are more Cloths out there. Get to work.")
                     PalmGlowWeak.run(self.key)
                  
                 elif length == all:
-                    print "All expected Cloths were found. Opening Door."
+                    print("All expected Cloths were found. Opening Door.")
                     PalmGlowStrong.run(self.key)
                     self.ToggleSDL("fromOutside")
            
@@ -289,7 +289,7 @@ class xJourneyClothGate(ptResponder):
                 PtDebugPrint("ERROR: xJourneyClothGate.ToggleSDL():\tERROR reading age SDL")
                 GateCurrentlyClosed = false
     
-            print "ToggleSDL: GateCurrentlyClosed = ", GateCurrentlyClosed
+            print("ToggleSDL: GateCurrentlyClosed = ", GateCurrentlyClosed)
     
     
             # Toggle the sdl value

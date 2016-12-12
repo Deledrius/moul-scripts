@@ -70,7 +70,7 @@ from array import array
 import os
 import socket
 from sys import py3kwarning
-from urlparse import urlsplit
+from urllib.parse import urlsplit
 import warnings
 with warnings.catch_warnings():
     if py3kwarning:
@@ -79,9 +79,9 @@ with warnings.catch_warnings():
     import mimetools
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 __all__ = ["HTTP", "HTTPResponse", "HTTPConnection",
            "HTTPException", "NotConnected", "UnknownProtocol",
@@ -359,7 +359,7 @@ class HTTPResponse:
         # Initialize with Simple-Response defaults
         line = self.fp.readline()
         if self.debuglevel > 0:
-            print "reply:", repr(line)
+            print("reply:", repr(line))
         if not line:
             # Presumably, the server closed the connection before
             # sending a valid response.
@@ -408,7 +408,7 @@ class HTTPResponse:
                 if not skip:
                     break
                 if self.debuglevel > 0:
-                    print "header:", skip
+                    print("header:", skip)
 
         self.status = status
         self.reason = reason.strip()
@@ -431,7 +431,7 @@ class HTTPResponse:
         self.msg = HTTPMessage(self.fp, 0)
         if self.debuglevel > 0:
             for hdr in self.msg.headers:
-                print "header:", hdr,
+                print("header:", hdr, end=' ')
 
         # don't let the msg keep an fp
         self.msg.fp = None
@@ -651,7 +651,7 @@ class HTTPResponse:
         """Return list of (header, value) tuples."""
         if self.msg is None:
             raise ResponseNotReady()
-        return self.msg.items()
+        return list(self.msg.items())
 
 
 class HTTPConnection:
@@ -718,7 +718,7 @@ class HTTPConnection:
     def _tunnel(self):
         self._set_hostport(self._tunnel_host, self._tunnel_port)
         self.send("CONNECT %s:%d HTTP/1.0\r\n" % (self.host, self.port))
-        for header, value in self._tunnel_headers.iteritems():
+        for header, value in self._tunnel_headers.items():
             self.send("%s: %s\r\n" % (header, value))
         self.send("\r\n")
         response = self.response_class(self.sock, strict = self.strict,
@@ -761,10 +761,10 @@ class HTTPConnection:
                 raise NotConnected()
 
         if self.debuglevel > 0:
-            print "send:", repr(data)
+            print("send:", repr(data))
         blocksize = 8192
         if hasattr(data,'read') and not isinstance(data, array):
-            if self.debuglevel > 0: print "sendIng a read()able"
+            if self.debuglevel > 0: print("sendIng a read()able")
             datablock = data.read(blocksize)
             while datablock:
                 self.sock.sendall(datablock)
@@ -945,14 +945,14 @@ class HTTPConnection:
         thelen = None
         try:
             thelen = str(len(body))
-        except TypeError, te:
+        except TypeError as te:
             # If this is a file-like object, try to
             # fstat its file descriptor
             try:
                 thelen = str(os.fstat(body.fileno()).st_size)
             except (AttributeError, OSError):
                 # Don't send a length if this failed
-                if self.debuglevel > 0: print "Cannot stat!!"
+                if self.debuglevel > 0: print("Cannot stat!!")
 
         if thelen is not None:
             self.putheader('Content-Length', thelen)
@@ -970,7 +970,7 @@ class HTTPConnection:
 
         if body and ('content-length' not in header_names):
             self._set_content_length(body)
-        for hdr, value in headers.iteritems():
+        for hdr, value in headers.items():
             self.putheader(hdr, value)
         self.endheaders(body)
 
@@ -1087,7 +1087,7 @@ class HTTP:
                 #only add this keyword if non-default for compatibility
                 #with other connection classes
                 response = self._conn.getresponse(buffering)
-        except BadStatusLine, e:
+        except BadStatusLine as e:
             ### hmm. if getresponse() ever closes the socket on a bad request,
             ### then we are going to have problems with self.sock
 
@@ -1327,13 +1327,13 @@ def test():
     h.putrequest('GET', selector)
     h.endheaders()
     status, reason, headers = h.getreply()
-    print 'status =', status
-    print 'reason =', reason
-    print "read", len(h.getfile().read())
-    print
+    print('status =', status)
+    print('reason =', reason)
+    print("read", len(h.getfile().read()))
+    print()
     if headers:
-        for header in headers.headers: print header.strip()
-    print
+        for header in headers.headers: print(header.strip())
+    print()
 
     # minimal test that code to extract host from url works
     class HTTP11(HTTP):
@@ -1354,20 +1354,20 @@ def test():
 
         for host, selector in (('sourceforge.net', '/projects/python'),
                                ):
-            print "https://%s%s" % (host, selector)
+            print("https://%s%s" % (host, selector))
             hs = HTTPS()
             hs.set_debuglevel(dl)
             hs.connect(host)
             hs.putrequest('GET', selector)
             hs.endheaders()
             status, reason, headers = hs.getreply()
-            print 'status =', status
-            print 'reason =', reason
-            print "read", len(hs.getfile().read())
-            print
+            print('status =', status)
+            print('reason =', reason)
+            print("read", len(hs.getfile().read()))
+            print()
             if headers:
-                for header in headers.headers: print header.strip()
-            print
+                for header in headers.headers: print(header.strip())
+            print()
 
 if __name__ == '__main__':
     test()

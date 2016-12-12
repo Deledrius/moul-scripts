@@ -3,7 +3,7 @@
 This module has intimate knowledge of the format of .pyc files.
 """
 
-import __builtin__
+import builtins
 import imp
 import marshal
 import os
@@ -105,13 +105,13 @@ def compile(file, cfile=None, dfile=None, doraise=False):
     """
     with open(file, 'U') as f:
         try:
-            timestamp = long(os.fstat(f.fileno()).st_mtime)
+            timestamp = int(os.fstat(f.fileno()).st_mtime)
         except AttributeError:
-            timestamp = long(os.stat(file).st_mtime)
+            timestamp = int(os.stat(file).st_mtime)
         codestring = f.read()
     try:
-        codeobject = __builtin__.compile(codestring, dfile or file,'exec')
-    except Exception,err:
+        codeobject = builtins.compile(codestring, dfile or file,'exec')
+    except Exception as err:
         py_exc = PyCompileError(err.__class__,err.args,dfile or file)
         if doraise:
             raise py_exc

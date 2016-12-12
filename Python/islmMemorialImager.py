@@ -98,7 +98,7 @@ class islmMemorialImager(ptModifier):
         Instance = self
         self.id = 5105
         self.version = 1
-        print "islmMemorialImager: init  version=%d.%d"%(self.version,3)
+        print("islmMemorialImager: init  version=%d.%d"%(self.version,3))
     ############################
     def OnServerInitComplete(self):
         
@@ -169,7 +169,7 @@ class islmMemorialImager(ptModifier):
         global kFirstChar
         global kLastUpdate
         #print "islmMemorialImager: PtGetDniTime: " + str(PtGetDniTime()) + "kLastUpdate: " + str(kLastUpdate) 
-        movedSince = int(((long(PtGetDniTime()) - long(kLastUpdate)) / kUpdateTime) * kIncAmount)
+        movedSince = int(((int(PtGetDniTime()) - int(kLastUpdate)) / kUpdateTime) * kIncAmount)
         #print "islmMemorialImager: Distance to move:" , movedSince
         kLastUpdate = PtGetDniTime()
         for x in range(4):
@@ -347,7 +347,7 @@ class islmMemorialImager(ptModifier):
             i = i - 1
             
             if not len(testmessage):
-                print "islmMemorialImager: Message Length = 0"
+                print("islmMemorialImager: Message Length = 0")
                 kMessage = ""
                 return
             testmessage = testmessage[0:len(testmessage) - 1]

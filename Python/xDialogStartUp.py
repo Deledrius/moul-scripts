@@ -184,7 +184,7 @@ class xDialogStartUp(ptResponder):
         self.id = 5340
         self.version = 3
         self.ageLink = None
-        print "xDialogStartUp: init  version = %d" % self.version
+        print("xDialogStartUp: init  version = %d" % self.version)
 
     ###########################
     def OnServerInitComplete(self):
@@ -263,10 +263,10 @@ class xDialogStartUp(ptResponder):
                     PtYesNoDialog(self.key,"Are you sure you want to quit?")
 
                 elif  tagID == k4aDeleteID: ## Delete Visitor ##
-                    print gSelectedSlot
-                    print type(gSelectedSlot)
+                    print(gSelectedSlot)
+                    print(type(gSelectedSlot))
                     if gSelectedSlot:
-                        deleteString = U"Would you like to delete the VISITOR " + unicode(gPlayerList[gSelectedSlot-gMinusVisitor][0]) + U"?"
+                        deleteString = "Would you like to delete the VISITOR " + str(gPlayerList[gSelectedSlot-gMinusVisitor][0]) + "?"
                         ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID)).setStringW(deleteString)
                         self.PlayerListNotify(GUIDiag4a, gVis_HotSpot, 0)
                         PtShowDialog("GUIDialog04c")
@@ -295,11 +295,11 @@ class xDialogStartUp(ptResponder):
                 if  tagID == k4bExploreID: ## Explore Uru ##
                     if gSelectedSlot:
                         PtShowDialog("GUIDialog06a")
-                        print "Player selected."
+                        print("Player selected.")
                         
                         # start setting active player (we'll link out when this operation completes)
                         playerID = gPlayerList[gSelectedSlot-gMinusExplorer][1]
-                        print "Setting active player."
+                        print("Setting active player.")
                         PtSetActivePlayer(playerID)
                         
                     ## Or Else?? ##
@@ -309,7 +309,7 @@ class xDialogStartUp(ptResponder):
 
                 elif  tagID == k4bDeleteID: ## Delete Explorer ##
                     if gSelectedSlot:
-                        deleteString = U"Would you like to delete the EXPLORER " + unicode(gPlayerList[gSelectedSlot-gMinusExplorer][0]) + U"?"
+                        deleteString = "Would you like to delete the EXPLORER " + str(gPlayerList[gSelectedSlot-gMinusExplorer][0]) + "?"
                         ptGUIControlTextBox(GUIDiag4c.dialog.getControlFromTag(k4cStaticID)).setStringW(deleteString)
                         self.PlayerListNotify(GUIDiag4b, gExp_HotSpot, 0)
                         PtShowDialog("GUIDialog04c")
@@ -387,11 +387,11 @@ class xDialogStartUp(ptResponder):
                         PtShowDialog("GUIDialog04a")
                     elif gPlayerList[0]:
                         PtShowDialog("GUIDialog06a")
-                        print "Player selected."
+                        print("Player selected.")
                                                 
                         # start setting active player (we'll link out when this operation completes)
                         playerID = gPlayerList[0][1]
-                        print "Setting active player."
+                        print("Setting active player.")
                         PtSetActivePlayer(playerID)
                     else:
                         PtHideDialog("GUIDialog05")
@@ -446,7 +446,7 @@ class xDialogStartUp(ptResponder):
                     if ptGUIControlCheckBox(GUIDiag6.dialog.getControlFromTag(k6FemaleID)).isChecked():
                         playerGender = "female"
 
-                    if playerName == U"" or playerName == "":
+                    if playerName == "" or playerName == "":
                         errorString = "Error, you must enter a Name."
                         ptGUIControlTextBox(GUIDiag4d.dialog.getControlFromTag(k4dTextID)).setString(errorString)
                         PtShowDialog("GUIDialog04d")
@@ -481,7 +481,7 @@ class xDialogStartUp(ptResponder):
 
                             ptGUIControlEditBox(GUIDiag6.dialog.getControlFromTag(k6NameID)).setString(fixedPlayerName)
                         else:
-                            print "Creating Player"
+                            print("Creating Player")
                             PtShowDialog("GUIDialog06a")
                             ptGUIControlButton(GUIDiag6.dialog.getControlFromTag(k6PlayID)).disable()
                             PtCreatePlayer(fixedPlayerName, playerGender, inviteCode)  #                                                  <---
@@ -506,7 +506,7 @@ class xDialogStartUp(ptResponder):
         global gPlayerList
 
         if result != 0:
-            print "OnAccountUpdate type %u failed: %u" % (opType, result)
+            print("OnAccountUpdate type %u failed: %u" % (opType, result))
             PtHideDialog("GUIDialog06a")
             if gIsExplorer:
                 self.ToggleColor(GUIDiag4b, k4bPlayer03)
@@ -543,7 +543,7 @@ class xDialogStartUp(ptResponder):
             return
         
         if opType == PtAccountUpdateType.kActivePlayer:
-            print "Active player set."
+            print("Active player set.")
 
             pythonBox = PtFindSceneobject("OptionsDialog", "GUI")
             pmlist = pythonBox.getPythonMods()
@@ -567,13 +567,13 @@ class xDialogStartUp(ptResponder):
             self.ageLink.setAgeInfo(ageInfo)
             self.ageLink.setLinkingRules(PtLinkingRules.kOwnedBook)
 
-            print "Linking to %s" % (self.ageLink.getAgeInfo().getAgeFilename())
+            print("Linking to %s" % (self.ageLink.getAgeInfo().getAgeFilename()))
             respLinkOutSND.run(self.key)
             ptNetLinkingMgr().linkToAge(self.ageLink)
             self.ageLink = None
 
         elif opType == PtAccountUpdateType.kCreatePlayer:
-            print "Player created."	
+            print("Player created.")	
 
             # setup the link to ACA
             self.ageLink = ptAgeLinkStruct()
@@ -584,7 +584,7 @@ class xDialogStartUp(ptResponder):
             
 
             # start setting active player (we'll link out once this operation completes)
-            print "Setting active player."
+            print("Setting active player.")
             PtSetActivePlayer(playerInt)
 
         elif opType == PtAccountUpdateType.kDeletePlayer:
@@ -600,19 +600,19 @@ class xDialogStartUp(ptResponder):
             PtHideDialog("GUIDialog04c")
 
         elif opType == PtAccountUpdateType.kUpgradePlayer:
-            print "xDialogStartUp: upgraded player %d" % playerInt
+            print("xDialogStartUp: upgraded player %d" % playerInt)
             if gIsExplorer:
                 self.SelectSlot(GUIDiag4b, 0)
                 self.InitPlayerList(GUIDiag4b, gExp_HotSpot, gExp_TxtBox, gExp_HiLite)
                 self.ToggleColor(GUIDiag4b, k4bPlayer03)
             else:
-                print "xDialogStartUp: we shouldn't have gotten here...apparently we upgraded a player without paying"
+                print("xDialogStartUp: we shouldn't have gotten here...apparently we upgraded a player without paying")
                 self.SelectSlot(GUIDiag4a, 0)
                 self.InitPlayerList(GUIDiag4a, gVis_HotSpot, gVis_TxtBox, gVis_HiLite)
                 self.ToggleColor(GUIDiag4a, k4aPlayer03)
 
         else:
-            print "AccountUpdate - Unknown: optype = %d, result = %d, playerInt = %d" % (opType, result, playerInt)
+            print("AccountUpdate - Unknown: optype = %d, result = %d, playerInt = %d" % (opType, result, playerInt))
 
     ###########################
     def ToggleColor(self,dlgObj,tagID):
@@ -646,17 +646,17 @@ class xDialogStartUp(ptResponder):
         global gSelectedSlot
 
         if tagID and tagID != gSelectedSlot: ## If there's a currently selected slot, return it to normal ##
-            print "xDialogStartUp.SelectSlot: tagID = %d   gSelectedSlot = %d" % (tagID, gSelectedSlot)
+            print("xDialogStartUp.SelectSlot: tagID = %d   gSelectedSlot = %d" % (tagID, gSelectedSlot))
             if gSelectedSlot:
                 self.ToggleColor(dlgObj, gSelectedSlot)
                 ptGUIControlButton(dlgObj.dialog.getControlFromTag(gSelectedSlot)).setNotifyOnInteresting(1)
-                print "xDialogStartUp.SelectSlot: Setting old slot to Interesting"
+                print("xDialogStartUp.SelectSlot: Setting old slot to Interesting")
 
             gSelectedSlot = tagID
             ptGUIControlButton(dlgObj.dialog.getControlFromTag(gSelectedSlot)).setNotifyOnInteresting(0)
-            print "xDialogStartUp.SelectSlot: Setting gSelectedSlot to new val and removing Interesting"
+            print("xDialogStartUp.SelectSlot: Setting gSelectedSlot to new val and removing Interesting")
         elif tagID == 0:
-            print "xDialogStartUp.SelectSlot: Setting gSelectedSlot to %d" % (tagID)
+            print("xDialogStartUp.SelectSlot: Setting gSelectedSlot to %d" % (tagID))
             gSelectedSlot = tagID
 
     ###########################
@@ -672,7 +672,7 @@ class xDialogStartUp(ptResponder):
             for Explorer in ExplorerList:
                 gPlayerList.append(Explorer)
 
-        print "xDialogStartUp.InitPlayerList Enter: gPlayerList = %s" % (str(gPlayerList))
+        print("xDialogStartUp.InitPlayerList Enter: gPlayerList = %s" % (str(gPlayerList)))
 
         for tagID in listTxtBox: ## Setup The Slot Colors And Default Titles ##
             ptGUIControlTextBox(dlgObj.dialog.getControlFromTag(tagID)).setString("CREATE EXPLORER")
@@ -682,17 +682,17 @@ class xDialogStartUp(ptResponder):
 
         self.PlayerListNotify(dlgObj, listHotSpot, 1)
         
-        basePath = PtGetUserPath() + U"\\Avatars\\"
+        basePath = PtGetUserPath() + "\\Avatars\\"
         if gPlayerList[0]: ## Setup The Visitor Slot ##
-            ptGUIControlTextBox(dlgObj.dialog.getControlFromTag(listTxtBox[0])).setStringW(unicode(gPlayerList[0][0]))
+            ptGUIControlTextBox(dlgObj.dialog.getControlFromTag(listTxtBox[0])).setStringW(str(gPlayerList[0][0]))
             try:
-                filename = basePath + unicode(gPlayerList[0][1]) + U".jpg"
-                print U"xDialogStartUp: Trying to load \"" + filename + "\""
+                filename = basePath + str(gPlayerList[0][1]) + ".jpg"
+                print("xDialogStartUp: Trying to load \"" + filename + "\"")
                 theImage = PtLoadJPEGFromDisk(filename, 0, 0)
                 mapPlayer01.textmap.drawImage(0, 0, theImage, 1)
                 mapPlayer01.textmap.flush()
             except:
-                print "xDialogStartUp: Load failed. This avatar probably doesn't have a snapshot"
+                print("xDialogStartUp: Load failed. This avatar probably doesn't have a snapshot")
 
         else:
             ptGUIControlTextBox(dlgObj.dialog.getControlFromTag(listTxtBox[0])).setString("CREATE VISITOR")
@@ -704,15 +704,15 @@ class xDialogStartUp(ptResponder):
 
         for idx in range(1, len(gPlayerList[1:]) + 1): ## Setup The Explorer Slots ##
             player = gPlayerList[idx]
-            ptGUIControlTextBox(dlgObj.dialog.getControlFromTag(listTxtBox[idx])).setStringW(unicode(player[0]))
+            ptGUIControlTextBox(dlgObj.dialog.getControlFromTag(listTxtBox[idx])).setStringW(str(player[0]))
             try:
-                filename = basePath + unicode(player[1]) + U".jpg"
-                print "xDialogStartUp: Trying to load \"" + filename + "\""
+                filename = basePath + str(player[1]) + ".jpg"
+                print("xDialogStartUp: Trying to load \"" + filename + "\"")
                 theImage = PtLoadJPEGFromDisk(filename, 0, 0)
                 TextMaps[idx].textmap.drawImage(0, 0, theImage, 0)
                 TextMaps[idx].textmap.flush()
             except:
-                print "xDialogStartUp: Load failed. This avatar probably doesn't have a snapshot"
+                print("xDialogStartUp: Load failed. This avatar probably doesn't have a snapshot")
 
         if gIsExplorer:
             try:
@@ -730,23 +730,23 @@ class xDialogStartUp(ptResponder):
                 self.SelectSlot(dlgObj, 0)
 
         if gIsExplorer and len(gPlayerList) > 0 and len(gPlayerList) < 6 and gPlayerList[0]:
-            print "xDialogStartUp: upgrading player %d to explorer status" % gPlayerList[0][1]
+            print("xDialogStartUp: upgrading player %d to explorer status" % gPlayerList[0][1])
             PtUpgradeVisitorToExplorer(gPlayerList[0][1])
 
         while len(gPlayerList) < 6:   ## Now That Slots Are Initialized, Fill Out The List ##
             gPlayerList.append(None)  ##    So We Don't Have Out Of Bounds Errors Later    ##
-        print "xDialogStartUp.InitPlayerList Exit: gPlayerList = %s" % (str(gPlayerList))
+        print("xDialogStartUp.InitPlayerList Exit: gPlayerList = %s" % (str(gPlayerList)))
 
     ###########################
     def PlayerListNotify(self,dlgObj,listHotSpot,toggle):
         global gSelectedSlot
 
         for tagID in listHotSpot:
-            print "xDialogStartUp.PlayerListNotify: setting tagID (%d) to Interesting = %d" % (tagID, toggle)
+            print("xDialogStartUp.PlayerListNotify: setting tagID (%d) to Interesting = %d" % (tagID, toggle))
             ptGUIControlButton(dlgObj.dialog.getControlFromTag(tagID)).setNotifyOnInteresting(toggle)
 
         if toggle and gSelectedSlot:
-            print "xDialogStartUp.PlayerListNotify: setting gSelectedSlot (%d) to not Interesting" % (gSelectedSlot)
+            print("xDialogStartUp.PlayerListNotify: setting gSelectedSlot (%d) to not Interesting" % (gSelectedSlot))
             ptGUIControlButton(dlgObj.dialog.getControlFromTag(gSelectedSlot)).setNotifyOnInteresting(0)
 
 ###########################

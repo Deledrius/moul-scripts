@@ -72,7 +72,7 @@ class xVisitorPayDialog(ptResponder):
         
         version = 1
         self.version = version
-        print "__init__ xVisitorPayDialog v. ", version
+        print("__init__ xVisitorPayDialog v. ", version)
 
     def OnServerInitComplete(self):
         global WebLaunchCmd

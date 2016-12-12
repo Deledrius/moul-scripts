@@ -56,9 +56,9 @@ import xCensor
 import xLocTools
 
 # xKI sub-modules.
-import xKIExtChatCommands
-from xKIConstants import *
-from xKIHelpers import *
+from . import xKIExtChatCommands
+from .xKIConstants import *
+from .xKIHelpers import *
 
 
 ## A class to process all the RT Chat functions of the KI.
@@ -285,7 +285,7 @@ class xKIChat(object):
                                 self.AddPlayerToRecents(ePlyr.playerGetID())
                                 break
             if not foundBuddy:
-                PtDebugPrint(u"xKIChat.SendMessage(): \"/p\" command can't find player.", level=kDebugDumpLevel)
+                PtDebugPrint("xKIChat.SendMessage(): \"/p\" command can't find player.", level=kDebugDumpLevel)
                 # Note: because there's no way of knowing the player's name
                 #(might have spaces), just don't try to display it.
                 self.AddChatLine(None, "(Can't find the player in any of the player lists.)", kChat.SystemMessage)
@@ -329,7 +329,7 @@ class xKIChat(object):
                     selPlyrList.append(toPlyr)
                     cFlags.private = True
                     self.AddPlayerToRecents(toPlyr.getPlayerID())
-                    PtDebugPrint(u"xKIChat.SendMessage(): Private message to \"{}\".".format(toPlyr.getPlayerName()), level=kDebugDumpLevel)
+                    PtDebugPrint("xKIChat.SendMessage(): Private message to \"{}\".".format(toPlyr.getPlayerName()), level=kDebugDumpLevel)
 
                 # Is it a player (possibly in another Age)?
                 elif isinstance(toPlyr, ptVaultNodeRef):
@@ -402,7 +402,7 @@ class xKIChat(object):
     def AddChatLine(self, player, message, cFlags, forceKI=True):
 
         try:
-            PtDebugPrint(u"xKIChat.AddChatLine(): Message = \"{}\".".format(message), player, cFlags, level=kDebugDumpLevel)
+            PtDebugPrint("xKIChat.AddChatLine(): Message = \"{}\".".format(message), player, cFlags, level=kDebugDumpLevel)
         except UnicodeEncodeError:
             pass
 
@@ -416,7 +416,7 @@ class xKIChat(object):
             mKIdialog = KIMicro.dialog
         else:
             mKIdialog = KIMini.dialog
-        pretext = U""
+        pretext = ""
         headerColor = kColors.ChatHeaderBroadcast
         bodyColor = kColors.ChatMessage
 
@@ -464,7 +464,7 @@ class xKIChat(object):
                                 if buddies is not None:
                                     buddyID = player.getPlayerID()
                                     if not buddies.playerlistHasPlayer(buddyID):
-                                        PtDebugPrint(u"xKIChat.AddChatLine(): Add unknown buddy {} to recents.".format(buddyID))
+                                        PtDebugPrint("xKIChat.AddChatLine(): Add unknown buddy {} to recents.".format(buddyID))
                                         self.AddPlayerToRecents(buddyID)
                         except ValueError:
                             pass
@@ -553,15 +553,15 @@ class xKIChat(object):
                 mKIdialog.show()
         if player is not None:
             separator = "" if pretext.endswith(" ") else " "
-            chatHeaderFormatted = U"{}{}{}:".format(pretext, separator, player.getPlayerNameW())
-            chatMessageFormatted = U" {}".format(message)
+            chatHeaderFormatted = "{}{}{}:".format(pretext, separator, player.getPlayerNameW())
+            chatMessageFormatted = " {}".format(message)
         else:
             # It must be a status or error message.
             chatHeaderFormatted = pretext
             if not pretext:
-                chatMessageFormatted = U"{}".format(message)
+                chatMessageFormatted = "{}".format(message)
             else:
-                chatMessageFormatted = U" {}".format(message)
+                chatMessageFormatted = " {}".format(message)
 
         chatArea = ptGUIControlMultiLineEdit(mKIdialog.getControlFromTag(kGUI.ChatDisplayArea))
         chatArea.beginUpdate()
@@ -571,7 +571,7 @@ class xKIChat(object):
         chatArea.insertColor(headerColor)
 
         # Added unicode support here.
-        chatArea.insertStringW(U"\n{}".format(chatHeaderFormatted))
+        chatArea.insertStringW("\n{}".format(chatHeaderFormatted))
         chatArea.insertColor(bodyColor)
         chatArea.insertStringW(chatMessageFormatted)
         chatArea.moveCursor(PtGUIMultiLineDirection.kBufferEnd)
@@ -587,7 +587,7 @@ class xKIChat(object):
         # If the chat is overflowing, erase the first line.
         if chatArea.getBufferSize() > kChat.MaxChatSize:
             while chatArea.getBufferSize() > kChat.MaxChatSize and chatArea.getBufferSize() > 0:
-                PtDebugPrint(u"xKIChat.AddChatLine(): Max chat buffer size reached. Removing top line.", level=kDebugDumpLevel)
+                PtDebugPrint("xKIChat.AddChatLine(): Max chat buffer size reached. Removing top line.", level=kDebugDumpLevel)
                 chatArea.deleteLinesFromTop(1)
         chatArea.endUpdate()
 
@@ -599,7 +599,7 @@ class xKIChat(object):
             chatArea2.insertColor(headerColor)
 
             # Added unicode support here.
-            chatArea2.insertStringW(U"\n{}".format(chatHeaderFormatted))
+            chatArea2.insertStringW("\n{}".format(chatHeaderFormatted))
             chatArea2.insertColor(bodyColor)
             chatArea2.insertStringW(chatMessageFormatted)
             chatArea2.moveCursor(PtGUIMultiLineDirection.kBufferEnd)
@@ -826,7 +826,7 @@ class CommandsProcessor:
         commands.update(kCommands.Other)
 
         # Does the message contain a standard command?
-        for command, function in commands.iteritems():
+        for command, function in commands.items():
             if msg.startswith(command):
                 theMessage = message.split(" ", 1)
                 if len(theMessage) > 1 and theMessage[1]:
@@ -837,7 +837,7 @@ class CommandsProcessor:
                 return None
 
         # Is it a simple text-based command?
-        for command, text in kCommands.Text.iteritems():
+        for command, text in kCommands.Text.items():
             if msg.startswith(command):
                 self.chatMgr.AddChatLine(None, text, 0)
                 return None
@@ -864,7 +864,7 @@ class CommandsProcessor:
         if message.startswith("/"):
             words = message.split()
             try:
-                emote = xKIExtChatCommands.xChatEmoteXlate[unicode(words[0][1:].lower())]
+                emote = xKIExtChatCommands.xChatEmoteXlate[str(words[0][1:].lower())]
                 if emote[0] in xKIExtChatCommands.xChatEmoteLoop:
                     PtAvatarEnterAnimMode(emote[0])
                 else:
@@ -887,7 +887,7 @@ class CommandsProcessor:
                 return message[1:]
             except LookupError:
                 try:
-                    command = xKIExtChatCommands.xChatExtendedChat[unicode(words[0][1:].lower())]
+                    command = xKIExtChatCommands.xChatExtendedChat[str(words[0][1:].lower())]
                     if isinstance(command, str):
                         args = message[len(words[0]):]
                         PtConsole(command + args)
@@ -902,7 +902,7 @@ class CommandsProcessor:
                                     return args
                             else:
                                 retDisp = command()
-                            if isinstance(retDisp, unicode) or isinstance(retDisp, str):
+                            if isinstance(retDisp, str) or isinstance(retDisp, str):
                                 self.chatMgr.DisplayStatusMessage(retDisp)
                             elif isinstance(retDisp, tuple):
                                 if retDisp[0]:
@@ -910,9 +910,9 @@ class CommandsProcessor:
                                 else:
                                     self.chatMgr.DisplayStatusMessage(retDisp[1])
                         except:
-                            PtDebugPrint(u"xKIChat.commandsProcessor(): Chat command function did not run.", command, level=kErrorLevel)
+                            PtDebugPrint("xKIChat.commandsProcessor(): Chat command function did not run.", command, level=kErrorLevel)
                 except LookupError:
-                    if unicode(words[0].lower()) in xKIExtChatCommands.xChatSpecialHandledCommands:
+                    if str(words[0].lower()) in xKIExtChatCommands.xChatSpecialHandledCommands:
                         return message
                     else:
                         self.chatMgr.AddChatLine(None, PtGetLocalizedString("KI.Errors.CommandError", [message]), kChat.SystemMessage)
@@ -926,7 +926,7 @@ class CommandsProcessor:
         if not params:
             return 0
         try:
-            pID = long(int(params))
+            pID = int(int(params))
             return pID
         except ValueError:
             for player in self.chatMgr.BKPlayerList:
@@ -1072,7 +1072,7 @@ class CommandsProcessor:
             return
         destination = destination.strip()
         currentTime = time.strftime("%d %b %Y %H:%M:%S (GMT)", time.gmtime())
-        PtDebugPrint(u"-- Logs dumped to \"{}\" at {}. --".format(destination, currentTime))
+        PtDebugPrint("-- Logs dumped to \"{}\" at {}. --".format(destination, currentTime))
         # Use a timer to allow for a final message to be logged.
         self.chatMgr.logDumpDest = destination  # So the timer can get at it.
         PtAtTimeCallback(self.chatMgr.key, 0.25, kTimers.DumpLogs)
@@ -1105,10 +1105,10 @@ class CommandsProcessor:
         pythonScripts = obj.getPythonMods()
         for script in pythonScripts:
             if script.getName() == kJalakPythonComponent:
-                PtDebugPrint(u"xKIChat.SaveColumns(): Found Jalak's python component.", level=kDebugDumpLevel)
+                PtDebugPrint("xKIChat.SaveColumns(): Found Jalak's python component.", level=kDebugDumpLevel)
                 SendNote(self.chatMgr.key, script, "SaveColumns;" + fName)
                 return
-        PtDebugPrint(u"xKIChat.SaveColumns(): Did not find Jalak's python component.", level=kErrorLevel)
+        PtDebugPrint("xKIChat.SaveColumns(): Did not find Jalak's python component.", level=kErrorLevel)
 
     ## Load the player's Jalak columns from a file.
     def LoadColumns(self, columnsFile):
@@ -1122,10 +1122,10 @@ class CommandsProcessor:
         pythonScripts = obj.getPythonMods()
         for script in pythonScripts:
             if script.getName() == kJalakPythonComponent:
-                PtDebugPrint(u"xKIChat.LoadColumns(): Found Jalak's python component.", level=kDebugDumpLevel)
+                PtDebugPrint("xKIChat.LoadColumns(): Found Jalak's python component.", level=kDebugDumpLevel)
                 SendNote(self.chatMgr.key, script, "LoadColumns;" + fName)
                 return
-        PtDebugPrint(u"xKIChat.LoadColumns(): Did not find Jalak's python component.", level=kErrorLevel)
+        PtDebugPrint("xKIChat.LoadColumns(): Did not find Jalak's python component.", level=kErrorLevel)
 
     #~~~~~~~~~~~~~~~~~~~#
     # Internal Commands #

@@ -99,7 +99,7 @@ yield_expr = 341
 #--end constants--
 
 sym_name = {}
-for _name, _value in globals().items():
+for _name, _value in list(globals().items()):
     if type(_value) is type(0):
         sym_name[_value] = _name
 

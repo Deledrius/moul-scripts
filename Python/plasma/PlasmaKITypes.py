@@ -267,7 +267,7 @@ def PtIsCGZMComplete():
         captures = PtGetMarkerQuestCaptures("cgz")
         if not captures:
             return False
-        for i in captures.itervalues():
+        for i in captures.values():
             if not i:
                 return False
         return True
@@ -286,7 +286,7 @@ def PtSetCGZM(mission):
 def PtSetMarkerQuestCaptures(name, captures):
     chron = PtFindCreateMarkerChronicle("Quest", name)
     if captures:
-        chron.setValue(','.join(( str(key) for key, value in captures.iteritems() if value )))
+        chron.setValue(','.join(( str(key) for key, value in captures.items() if value )))
     else:
         chron.setValue("")
     chron.save()

@@ -55,7 +55,7 @@ class WeakValueDictionary(UserDict.UserDict):
     def __getitem__(self, key):
         o = self.data[key]()
         if o is None:
-            raise KeyError, key
+            raise KeyError(key)
         else:
             return o
 
@@ -81,7 +81,7 @@ class WeakValueDictionary(UserDict.UserDict):
 
     def copy(self):
         new = WeakValueDictionary()
-        for key, wr in self.data.items():
+        for key, wr in list(self.data.items()):
             o = wr()
             if o is not None:
                 new[key] = o
@@ -92,7 +92,7 @@ class WeakValueDictionary(UserDict.UserDict):
     def __deepcopy__(self, memo):
         from copy import deepcopy
         new = self.__class__()
-        for key, wr in self.data.items():
+        for key, wr in list(self.data.items()):
             o = wr()
             if o is not None:
                 new[deepcopy(key, memo)] = o
@@ -113,23 +113,23 @@ class WeakValueDictionary(UserDict.UserDict):
 
     def items(self):
         L = []
-        for key, wr in self.data.items():
+        for key, wr in list(self.data.items()):
             o = wr()
             if o is not None:
                 L.append((key, o))
         return L
 
     def iteritems(self):
-        for wr in self.data.itervalues():
+        for wr in self.data.values():
             value = wr()
             if value is not None:
                 yield wr.key, value
 
     def iterkeys(self):
-        return self.data.iterkeys()
+        return iter(self.data.keys())
 
     def __iter__(self):
-        return self.data.iterkeys()
+        return iter(self.data.keys())
 
     def itervaluerefs(self):
         """Return an iterator that yields the weak references to the values.
@@ -141,10 +141,10 @@ class WeakValueDictionary(UserDict.UserDict):
         keep the values around longer than needed.
 
         """
-        return self.data.itervalues()
+        return iter(self.data.values())
 
     def itervalues(self):
-        for wr in self.data.itervalues():
+        for wr in self.data.values():
             obj = wr()
             if obj is not None:
                 yield obj
@@ -164,7 +164,7 @@ class WeakValueDictionary(UserDict.UserDict):
                 return args[0]
             raise
         if o is None:
-            raise KeyError, key
+            raise KeyError(key)
         else:
             return o
 
@@ -182,7 +182,7 @@ class WeakValueDictionary(UserDict.UserDict):
         if dict is not None:
             if not hasattr(dict, "items"):
                 dict = type({})(dict)
-            for key, o in dict.items():
+            for key, o in list(dict.items()):
                 d[key] = KeyedRef(o, self._remove, key)
         if len(kwargs):
             self.update(kwargs)
@@ -197,11 +197,11 @@ class WeakValueDictionary(UserDict.UserDict):
         keep the values around longer than needed.
 
         """
-        return self.data.values()
+        return list(self.data.values())
 
     def values(self):
         L = []
-        for wr in self.data.values():
+        for wr in list(self.data.values()):
             o = wr()
             if o is not None:
                 L.append(o)
@@ -263,7 +263,7 @@ class WeakKeyDictionary(UserDict.UserDict):
 
     def copy(self):
         new = WeakKeyDictionary()
-        for key, value in self.data.items():
+        for key, value in list(self.data.items()):
             o = key()
             if o is not None:
                 new[o] = value
@@ -274,7 +274,7 @@ class WeakKeyDictionary(UserDict.UserDict):
     def __deepcopy__(self, memo):
         from copy import deepcopy
         new = self.__class__()
-        for key, value in self.data.items():
+        for key, value in list(self.data.items()):
             o = key()
             if o is not None:
                 new[o] = deepcopy(value, memo)
@@ -299,14 +299,14 @@ class WeakKeyDictionary(UserDict.UserDict):
 
     def items(self):
         L = []
-        for key, value in self.data.items():
+        for key, value in list(self.data.items()):
             o = key()
             if o is not None:
                 L.append((o, value))
         return L
 
     def iteritems(self):
-        for wr, value in self.data.iteritems():
+        for wr, value in self.data.items():
             key = wr()
             if key is not None:
                 yield key, value
@@ -321,19 +321,19 @@ class WeakKeyDictionary(UserDict.UserDict):
         keep the keys around longer than needed.
 
         """
-        return self.data.iterkeys()
+        return iter(self.data.keys())
 
     def iterkeys(self):
-        for wr in self.data.iterkeys():
+        for wr in self.data.keys():
             obj = wr()
             if obj is not None:
                 yield obj
 
     def __iter__(self):
-        return self.iterkeys()
+        return iter(self.keys())
 
     def itervalues(self):
-        return self.data.itervalues()
+        return iter(self.data.values())
 
     def keyrefs(self):
         """Return a list of weak references to the keys.
@@ -345,11 +345,11 @@ class WeakKeyDictionary(UserDict.UserDict):
         keep the keys around longer than needed.
 
         """
-        return self.data.keys()
+        return list(self.data.keys())
 
     def keys(self):
         L = []
-        for wr in self.data.keys():
+        for wr in list(self.data.keys()):
             o = wr()
             if o is not None:
                 L.append(o)
@@ -373,7 +373,7 @@ class WeakKeyDictionary(UserDict.UserDict):
         if dict is not None:
             if not hasattr(dict, "items"):
                 dict = type({})(dict)
-            for key, value in dict.items():
+            for key, value in list(dict.items()):
                 d[ref(key, self._remove)] = value
         if len(kwargs):
             self.update(kwargs)

@@ -50,7 +50,7 @@ To be used with Plasma20, Python File Component
 
 from Plasma import *
 from PlasmaTypes import *
-import cPickle
+import pickle
 
 #=============================================================
 # define the attributes that will be entered in max
@@ -154,26 +154,26 @@ class mymod(ptModifier):
 
     def Save(self,savefile):
         "Save variables that we need to be persistent"
-        print "Save variables"
-        cPickle.dump(self.svMyNumber,savefile)
-        cPickle.dump(openb.value,savefile)
+        print("Save variables")
+        pickle.dump(self.svMyNumber,savefile)
+        pickle.dump(openb.value,savefile)
         # this will recursively go through all the elements of the list and pickle each item
         #   ... which should call __getinitargs__ and save that to construct a new one in the future
-        cPickle.dump(self.helperslist,savefile)
+        pickle.dump(self.helperslist,savefile)
 
     def Load(self, loadfile):
         "Load the persistent variables"
-        print "Load variables"
-        self.svMyNumber = cPickle.load(loadfile)
-        openb.value = cPickle.load(loadfile)
+        print("Load variables")
+        self.svMyNumber = pickle.load(loadfile)
+        openb.value = pickle.load(loadfile)
         # this will recreate a list of myHelper objects
-        self.helperslist = cPickle.load(loadfile)
+        self.helperslist = pickle.load(loadfile)
 
     def OnPageLoad(self,what,who):
         if what==kLoaded:
-            print "%s is finished loading" % (who)
+            print("%s is finished loading" % (who))
         elif what == kUnloaded:
-            print "%s is finished unloading" % (who)
+            print("%s is finished unloading" % (who))
 
 #====================================
 # Helper class

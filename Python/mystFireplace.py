@@ -105,7 +105,7 @@ class mystFireplace(ptModifier):
         self.id = 5335
 
         self.version = 3
-        print "__init__MystFireplace v.", self.version
+        print("__init__MystFireplace v.", self.version)
 
     def OnServerInitComplete(self):
         ageSDL = PtGetAgeSDL()
@@ -144,7 +144,7 @@ class mystFireplace(ptModifier):
     def OnNotify(self,state,id,events):
         global IgnorePanelClick
         
-        print "onnotify: id -", id
+        print("onnotify: id -", id)
 
         if id == actButton.id and state:
             #actPanelButtons.disable()
@@ -171,7 +171,7 @@ class mystFireplace(ptModifier):
                 id = IgnorePanelClick[0]
                 del IgnorePanelClick[0]
                 
-                for rkey,rvalue in actPanelButtons.byObject.items():
+                for rkey,rvalue in list(actPanelButtons.byObject.items()):
                     parent = rvalue.getParentKey()
                     if parent:
                         pname = parent.getName()
@@ -267,7 +267,7 @@ class mystFireplace(ptModifier):
                     return
                 else:
                     IgnorePanelClick.append(id)
-                    for rkey,rvalue in actPanelButtons.byObject.items():
+                    for rkey,rvalue in list(actPanelButtons.byObject.items()):
                         parent = rvalue.getParentKey()
                         if parent:
                             pname = parent.getName()
@@ -282,9 +282,9 @@ class mystFireplace(ptModifier):
                     bstate = "press"
                     CheckedButtons.append(id)
 
-                print panelName, bstate
+                print(panelName, bstate)
 
-                for rkey,rvalue in respMorphButtons.byObject.items():
+                for rkey,rvalue in list(respMorphButtons.byObject.items()):
                     parent = rvalue.getParentKey()
                     if parent:
                         pname = parent.getName()
@@ -378,8 +378,8 @@ class mystFireplace(ptModifier):
         CheckedButtons.sort()
         solution.sort()
 
-        print "CheckedButtons:", CheckedButtons
-        print "solution      :", solution
+        print("CheckedButtons:", CheckedButtons)
+        print("solution      :", solution)
 
         return CheckedButtons == solution
 
@@ -393,7 +393,7 @@ class mystFireplace(ptModifier):
 
         for but in CheckedButtons:
             id = but[-3:]
-            for rkey,rvalue in respMorphButtons.byObject.items():
+            for rkey,rvalue in list(respMorphButtons.byObject.items()):
                 parent = rvalue.getParentKey()
                 if parent:
                     pname = parent.getName()

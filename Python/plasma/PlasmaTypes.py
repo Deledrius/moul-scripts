@@ -173,7 +173,7 @@ def PtGetObjectName(obj):
 def PtAddEvent(notify,event):
     "Add an event of any type to a ptNotify message object"
     if type(event) != type([]):
-        print "Unrecognized event record structure"
+        print("Unrecognized event record structure")
         return
     if event[0] == kCollisionEvent:
         notify.addCollisionEvent(event[1],event[2].getKey(),event[3].getKey())
@@ -201,7 +201,7 @@ def PtAddEvent(notify,event):
     elif event[0] == kResponderStateEvent:
         notify.addResponderState(event[1])
     else:
-        print "Unrecognized event type %d" % (event[0])
+        print("Unrecognized event type %d" % (event[0]))
         
 # add a list of events into a ptNotify message
 def PtAddEvents(notify, events):
@@ -492,16 +492,16 @@ class ptAttribResponder(ptAttributeKeyList):
                 nt.netForce(1)
             # see if the state is specified
             if type(state) == type(0):
-                raise ptResponderStateError,"Specifying state as a number is no longer supported"
+                raise ptResponderStateError("Specifying state as a number is no longer supported")
             elif type(state) == type(''):
                 if type(self.state_list) != type(None):
                     try:
                         idx = self.state_list.index(state)
                         nt.addResponderState(idx)
                     except ValueError:
-                        raise ptResponderStateError, "There is no state called '%s'"%(state)
+                        raise ptResponderStateError("There is no state called '%s'"%(state))
                 else:
-                    raise ptResponderStateError,"There is no state list provided"
+                    raise ptResponderStateError("There is no state list provided")
             # see if there are events to pass on
             if type(events) != type(None):
                 PtAddEvents(nt,events)
@@ -535,16 +535,16 @@ class ptAttribResponder(ptAttributeKeyList):
                 nt.netForce(1)
             # see if the state is specified
             if type(state) == type(0):
-                raise ptResponderStateError,"Specifying state as a number is no longer supported"
+                raise ptResponderStateError("Specifying state as a number is no longer supported")
             elif type(state) == type(''):
                 if type(self.state_list) != type(None):
                     try:
                         idx = self.state_list.index(state)
                         nt.addResponderState(idx)
                     except ValueError:
-                        raise ptResponderStateError, "There is no state called '%s'"%(state)
+                        raise ptResponderStateError("There is no state called '%s'"%(state))
                 else:
-                    raise ptResponderStateError,"There is no state list provided"
+                    raise ptResponderStateError("There is no state list provided")
             # see if there are events to pass on
             nt.setType(PtNotificationType.kResponderChangeState)
             nt.setActivate(1.0)
@@ -722,7 +722,7 @@ class ptAttribAnimation(ptAttribute):
                 self.animation.setAnimName(value)
                 # then if there are animations by object then set those, too
                 if isinstance(self.byObject,ptByAnimObject):
-                    for anim in self.byObject.values():
+                    for anim in list(self.byObject.values()):
                         anim.setAnimName(value)
             except AttributeError:
                 self.animation = ptAnimation()

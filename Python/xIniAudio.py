@@ -50,8 +50,8 @@ from PlasmaConstants import *
 from Plasma import *
 
 gIniFile = None
-gFilename = U"audio.ini"
-gFilenameAndPath = U""
+gFilename = "audio.ini"
+gFilenameAndPath = ""
 
 # the different volume commands
 kVolCmd = "Audio.SetChannelVolume"
@@ -74,17 +74,17 @@ kBeFalse = "false"
 
 def ConstructFilenameAndPath():
     global gFilenameAndPath
-    if gFilenameAndPath == U"":
+    if gFilenameAndPath == "":
         if PtIsInternalRelease():
             # check for local file
-            localNameAndPath = U"init/" + gFilename
+            localNameAndPath = "init/" + gFilename
             if PtFileExists(localNameAndPath):
                 gFilenameAndPath = localNameAndPath
-                print U"xIniAudio::ConstructFilenameAndPath(): Using internal \"" + gFilenameAndPath + U"\" file"
+                print("xIniAudio::ConstructFilenameAndPath(): Using internal \"" + gFilenameAndPath + "\" file")
                 return
         # otherwise, use the standard init path
-        gFilenameAndPath = PtGetInitPath() + U"/" + gFilename
-        print U"xIniAudio::ConstructFilenameAndPath(): Using user-level \"" + gFilenameAndPath + U"\" file"
+        gFilenameAndPath = PtGetInitPath() + "/" + gFilename
+        print("xIniAudio::ConstructFilenameAndPath(): Using user-level \"" + gFilenameAndPath + "\" file")
 
 def WriteIni():
     global gIniFile
@@ -322,7 +322,7 @@ def SetAudioMode(init, device, eax):
         else:
             gIniFile.addEntry("Audio.Initialize " + val)
 
-        print device
+        print(device)
         if entryDev:
             entryDev.setValue(0, "\"" + device + "\"")
         else:

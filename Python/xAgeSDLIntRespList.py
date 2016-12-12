@@ -72,7 +72,7 @@ class xAgeSDLIntRespList(ptResponder):
         ptModifier.__init__(self)
         self.id = 5307
         self.version = 2
-        print "__init__xAgeSDLIntRespList v.", self.version
+        print("__init__xAgeSDLIntRespList v.", self.version)
     
     def OnFirstUpdate(self):
         if type(stringSDLVarName.value) != type("") or stringSDLVarName.value == "":
@@ -96,7 +96,7 @@ class xAgeSDLIntRespList(ptResponder):
         respName = (stringFormat.value % SDLvalue)
 
         if 0 <= SDLvalue <= intMaxState.value:
-            for key in respList.byObject.keys():
+            for key in list(respList.byObject.keys()):
                 #match = regexp.search(key)
                 if key == respName:#match:
                     PtDebugPrint("DEBUG: xAgeSDLIntRespList.OnServerInitComplete:\tRunning responder - %s" % (stringFormat.value % SDLvalue))
@@ -129,7 +129,7 @@ class xAgeSDLIntRespList(ptResponder):
         respName = (stringFormat.value % SDLvalue)
 
         if 0 <= SDLvalue <= intMaxState.value:
-            for key in respList.byObject.keys():
+            for key in list(respList.byObject.keys()):
                 #match = regexp.search(key)
                 if key == respName:#match:
                     PtDebugPrint("DEBUG: xAgeSDLIntRespList.OnSDLNotify:\tRunning responder - %s" % (stringFormat.value % SDLvalue))

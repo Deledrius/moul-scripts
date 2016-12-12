@@ -37,7 +37,7 @@ saferepr()
 import sys as _sys
 import warnings
 
-from cStringIO import StringIO as _StringIO
+from io import StringIO as _StringIO
 
 __all__ = ["pprint","pformat","isreadable","isrecursive","saferepr",
            "PrettyPrinter"]
@@ -152,7 +152,7 @@ class PrettyPrinter:
             if length:
                 context[objid] = 1
                 indent = indent + self._indent_per_level
-                items = _sorted(object.items())
+                items = _sorted(list(object.items()))
                 key, ent = items[0]
                 rep = self._repr(key, context, level)
                 write(rep)
@@ -281,7 +281,7 @@ def _safe_repr(object, context, maxlevels, level):
         append = components.append
         level += 1
         saferepr = _safe_repr
-        for k, v in _sorted(object.items()):
+        for k, v in _sorted(list(object.items())):
             krepr, kreadable, krecur = saferepr(k, context, maxlevels, level)
             vrepr, vreadable, vrecur = saferepr(v, context, maxlevels, level)
             append("%s: %s" % (krepr, vrepr))
@@ -343,8 +343,8 @@ def _perfcheck(object=None):
     t2 = time.time()
     p.pformat(object)
     t3 = time.time()
-    print "_safe_repr:", t2 - t1
-    print "pformat:", t3 - t2
+    print("_safe_repr:", t2 - t1)
+    print("pformat:", t3 - t2)
 
 if __name__ == "__main__":
     _perfcheck()

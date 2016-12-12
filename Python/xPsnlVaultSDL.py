@@ -128,17 +128,17 @@ class xPsnlVaultSDL:
         #print "Attempting to set item %s to %s" % (sub, str(val))
 
         if vartype == PtSDLVarType.kInt:
-            if type(val) in (types.IntType, types.LongType):
+            if type(val) in (int, int):
                 #print "Set int"
                 var.setInt(val)
 
         elif vartype == PtSDLVarType.kFloat:
-            if type(val) in (types.IntType, types.LongType, types.FloatType):
+            if type(val) in (int, int, float):
                 #print "Set float"
                 var.setFloat(val)
 
         elif vartype == PtSDLVarType.kDouble:
-            if type(val) in (types.IntType, types.LongType, types.FloatType):
+            if type(val) in (int, int, float):
                 #print "Set double"
                 var.setDouble(val)
 
@@ -157,7 +157,7 @@ class xPsnlVaultSDL:
                 var.setString(str(val))
 
         else:
-            if type(val) in (types.IntType, types.LongType):
+            if type(val) in (int, int):
                 #print "Set int"
                 var.setInt(val)
 

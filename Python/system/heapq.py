@@ -129,7 +129,7 @@ From all times, sorting has always been a Great Art! :-)
 __all__ = ['heappush', 'heappop', 'heapify', 'heapreplace', 'merge',
            'nlargest', 'nsmallest', 'heappushpop']
 
-from itertools import islice, repeat, count, imap, izip, tee, chain
+from itertools import islice, repeat, count, tee, chain
 from operator import itemgetter
 import bisect
 
@@ -180,7 +180,7 @@ def heapify(x):
     # or i < (n-1)/2.  If n is even = 2*j, this is (2*j-1)/2 = j-1/2 so
     # j-1 is the largest, which is n//2 - 1.  If n is odd = 2*j+1, this is
     # (2*j+1-1)/2 = j so j-1 is the largest, and that's again n//2-1.
-    for i in reversed(xrange(n//2)):
+    for i in reversed(range(n//2)):
         _siftup(x, i)
 
 def nlargest(n, iterable):
@@ -228,7 +228,7 @@ def nsmallest(n, iterable):
     #    O(m) + O(n log m) comparisons.
     h = list(iterable)
     heapify(h)
-    return map(heappop, repeat(h, min(n, len(h))))
+    return list(map(heappop, repeat(h, min(n, len(h)))))
 
 # 'heap' is a heap at all indices >= startpos, except possibly for pos.  pos
 # is the index of a leaf with a possibly out-of-order value.  Restore the
@@ -329,7 +329,7 @@ def merge(*iterables):
     h_append = h.append
     for itnum, it in enumerate(map(iter, iterables)):
         try:
-            next = it.next
+            next = it.__next__
             h_append([next(), itnum, next])
         except _StopIteration:
             pass
@@ -375,15 +375,15 @@ def nsmallest(n, iterable, key=None):
 
     # When key is none, use simpler decoration
     if key is None:
-        it = izip(iterable, count())                        # decorate
+        it = zip(iterable, count())                        # decorate
         result = _nsmallest(n, it)
-        return map(itemgetter(0), result)                   # undecorate
+        return list(map(itemgetter(0), result))                   # undecorate
 
     # General case, slowest method
     in1, in2 = tee(iterable)
-    it = izip(imap(key, in1), count(), in2)                 # decorate
+    it = zip(map(key, in1), count(), in2)                 # decorate
     result = _nsmallest(n, it)
-    return map(itemgetter(2), result)                       # undecorate
+    return list(map(itemgetter(2), result))                       # undecorate
 
 _nlargest = nlargest
 def nlargest(n, iterable, key=None):
@@ -413,15 +413,15 @@ def nlargest(n, iterable, key=None):
 
     # When key is none, use simpler decoration
     if key is None:
-        it = izip(iterable, count(0,-1))                    # decorate
+        it = zip(iterable, count(0,-1))                    # decorate
         result = _nlargest(n, it)
-        return map(itemgetter(0), result)                   # undecorate
+        return list(map(itemgetter(0), result))                   # undecorate
 
     # General case, slowest method
     in1, in2 = tee(iterable)
-    it = izip(imap(key, in1), count(0,-1), in2)             # decorate
+    it = zip(map(key, in1), count(0,-1), in2)             # decorate
     result = _nlargest(n, it)
-    return map(itemgetter(2), result)                       # undecorate
+    return list(map(itemgetter(2), result))                       # undecorate
 
 if __name__ == "__main__":
     # Simple sanity test
@@ -432,7 +432,7 @@ if __name__ == "__main__":
     sort = []
     while heap:
         sort.append(heappop(heap))
-    print sort
+    print(sort)
 
     import doctest
     doctest.testmod()

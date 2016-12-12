@@ -30,7 +30,7 @@ Written by Marc-Andre Lemburg (mal@lemburg.com).
 
 import codecs
 from encodings import aliases
-import __builtin__
+import builtins
 
 _cache = {}
 _unknown = '--unknown--'
@@ -61,7 +61,7 @@ def normalize_encoding(encoding):
     """
     # Make sure we have an 8-bit string, because .translate() works
     # differently for Unicode strings.
-    if hasattr(__builtin__, "unicode") and isinstance(encoding, unicode):
+    if hasattr(__builtin__, "unicode") and isinstance(encoding, str):
         # Note that .encode('latin-1') does *not* use the codec
         # registry, so this call doesn't recurse. (See unicodeobject.c
         # PyUnicode_AsEncodedString() for details)
@@ -120,18 +120,16 @@ def search_function(encoding):
     entry = getregentry()
     if not isinstance(entry, codecs.CodecInfo):
         if not 4 <= len(entry) <= 7:
-            raise CodecRegistryError,\
-                 'module "%s" (%s) failed to register' % \
-                  (mod.__name__, mod.__file__)
+            raise CodecRegistryError('module "%s" (%s) failed to register' % \
+                  (mod.__name__, mod.__file__))
         if not hasattr(entry[0], '__call__') or \
            not hasattr(entry[1], '__call__') or \
            (entry[2] is not None and not hasattr(entry[2], '__call__')) or \
            (entry[3] is not None and not hasattr(entry[3], '__call__')) or \
            (len(entry) > 4 and entry[4] is not None and not hasattr(entry[4], '__call__')) or \
            (len(entry) > 5 and entry[5] is not None and not hasattr(entry[5], '__call__')):
-            raise CodecRegistryError,\
-                'incompatible codecs in module "%s" (%s)' % \
-                (mod.__name__, mod.__file__)
+            raise CodecRegistryError('incompatible codecs in module "%s" (%s)' % \
+                (mod.__name__, mod.__file__))
         if len(entry)<7 or entry[6] is None:
             entry += (None,)*(6-len(entry)) + (mod.__name__.split(".", 1)[1],)
         entry = codecs.CodecInfo(*entry)

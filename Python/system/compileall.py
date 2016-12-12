@@ -34,11 +34,11 @@ def compile_dir(dir, maxlevels=10, ddir=None,
 
     """
     if not quiet:
-        print 'Listing', dir, '...'
+        print('Listing', dir, '...')
     try:
         names = os.listdir(dir)
     except os.error:
-        print "Can't list", dir
+        print("Can't list", dir)
         names = []
     names.sort()
     success = 1
@@ -95,16 +95,16 @@ def compile_file(fullname, ddir=None, force=0, rx=None, quiet=0):
                 except IOError:
                     pass
             if not quiet:
-                print 'Compiling', fullname, '...'
+                print('Compiling', fullname, '...')
             try:
                 ok = py_compile.compile(fullname, None, dfile, True)
-            except py_compile.PyCompileError,err:
+            except py_compile.PyCompileError as err:
                 if quiet:
-                    print 'Compiling', fullname, '...'
-                print err.msg
+                    print('Compiling', fullname, '...')
+                print(err.msg)
                 success = 0
-            except IOError, e:
-                print "Sorry", e
+            except IOError as e:
+                print("Sorry", e)
                 success = 0
             else:
                 if ok == 0:
@@ -125,7 +125,7 @@ def compile_path(skip_curdir=1, maxlevels=0, force=0, quiet=0):
     success = 1
     for dir in sys.path:
         if (not dir or dir == os.curdir) and skip_curdir:
-            print 'Skipping current directory'
+            print('Skipping current directory')
         else:
             success = success and compile_dir(dir, maxlevels, None,
                                               force, quiet=quiet)
@@ -146,7 +146,7 @@ def expand_args(args, flist):
                     break
                 expanded.append(line[:-1])
         except IOError:
-            print "Error reading file list %s" % flist
+            print("Error reading file list %s" % flist)
             raise
     return expanded
 
@@ -155,18 +155,18 @@ def main():
     import getopt
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'lfqd:x:i:')
-    except getopt.error, msg:
-        print msg
-        print "usage: python compileall.py [-l] [-f] [-q] [-d destdir] " \
-              "[-x regexp] [-i list] [directory|file ...]"
-        print "-l: don't recurse down"
-        print "-f: force rebuild even if timestamps are up-to-date"
-        print "-q: quiet operation"
-        print "-d destdir: purported directory name for error messages"
-        print "   if no directory arguments, -l sys.path is assumed"
-        print "-x regexp: skip files matching the regular expression regexp"
-        print "   the regexp is searched for in the full path of the file"
-        print "-i list: expand list with its content (file and directory names)"
+    except getopt.error as msg:
+        print(msg)
+        print("usage: python compileall.py [-l] [-f] [-q] [-d destdir] " \
+              "[-x regexp] [-i list] [directory|file ...]")
+        print("-l: don't recurse down")
+        print("-f: force rebuild even if timestamps are up-to-date")
+        print("-q: quiet operation")
+        print("-d destdir: purported directory name for error messages")
+        print("   if no directory arguments, -l sys.path is assumed")
+        print("-x regexp: skip files matching the regular expression regexp")
+        print("   the regexp is searched for in the full path of the file")
+        print("-i list: expand list with its content (file and directory names)")
         sys.exit(2)
     maxlevels = 10
     ddir = None
@@ -185,7 +185,7 @@ def main():
         if o == '-i': flist = a
     if ddir:
         if len(args) != 1 and not os.path.isdir(args[0]):
-            print "-d destdir require exactly one directory argument"
+            print("-d destdir require exactly one directory argument")
             sys.exit(2)
     success = 1
     try:
@@ -207,7 +207,7 @@ def main():
         else:
             success = compile_path()
     except KeyboardInterrupt:
-        print "\n[interrupt]"
+        print("\n[interrupt]")
         success = 0
     return success
 

@@ -253,7 +253,7 @@ def GetItemName(maxName):
     try:
         return PtGetLocalizedString(xACAItems.xClothesXRef[maxName])
     except:
-        return U"*" + unicode(maxName) + U"*"
+        return "*" + str(maxName) + "*"
 
 # Timer constants
 kTimerUpdateMorphs = 99
@@ -756,7 +756,7 @@ class xAvatarCustomization(ptModifier):
                             descbox.setStringW(newitem.description)
                             # set up the color pickers
                             colorbar1 = ptGUIControlTextBox(AvCustGUI.dialog.getControlFromTag(kColorbarName1))
-                            if newitem.colorlabel1 == U"":
+                            if newitem.colorlabel1 == "":
                                 self.IHideColorPicker(kColor1ClickMap)
                             else:
                                 self.IShowColorPicker(kColor1ClickMap)
@@ -766,7 +766,7 @@ class xAvatarCustomization(ptModifier):
                                 else:
                                     self.IDrawPickerThingy(kColor1ClickMap,lastcolor1)
                             colorbar2 = ptGUIControlTextBox(AvCustGUI.dialog.getControlFromTag(kColorbarName2))
-                            if newitem.colorlabel2 == U"":
+                            if newitem.colorlabel2 == "":
                                 self.IHideColorPicker(kColor2ClickMap)
                             else:
                                 self.IShowColorPicker(kColor2ClickMap)
@@ -810,14 +810,14 @@ class xAvatarCustomization(ptModifier):
                                     descbox.setStringW(newitem.description)
                                     # set up the color pickers
                                     colorbar1 = ptGUIControlTextBox(AvCustGUI.dialog.getControlFromTag(kColorbarName1))
-                                    if newitem.colorlabel1 == U"":
+                                    if newitem.colorlabel1 == "":
                                         self.IHideColorPicker(kColor1ClickMap)
                                     else:
                                         self.IShowColorPicker(kColor1ClickMap)
                                         colorbar1.setStringW(newitem.colorlabel1)
                                         self.IDrawPickerThingy(kColor1ClickMap,lastcolor1)
                                     colorbar2 = ptGUIControlTextBox(AvCustGUI.dialog.getControlFromTag(kColorbarName2))
-                                    if newitem.colorlabel2 == U"":
+                                    if newitem.colorlabel2 == "":
                                         self.IHideColorPicker(kColor2ClickMap)
                                     else:
                                         self.IShowColorPicker(kColor2ClickMap)
@@ -1033,7 +1033,7 @@ class xAvatarCustomization(ptModifier):
                             else:
                                 PtChangeAvatar("Female")
                     elif btnID == kAvatarCameraID:
-                        print "ACA: Taking a picture!"
+                        print("ACA: Taking a picture!")
                         picCam = ptCamera()
                         picCam.setAspectRatio(1)
                         AvCustGUI.dialog.hide()
@@ -1069,10 +1069,10 @@ class xAvatarCustomization(ptModifier):
         avatar = PtGetLocalAvatar()
         currentgender = avatar.avatar.getAvatarClothingGroup()
         if currentgender == 1:
-            print "Female Screenshot"
+            print("Female Screenshot")
             TestMap.textmap.drawImageClipped(0, 0, image, 55, 250, 512, 512, 0)
         else:
-            print "Male Screenshot"
+            print("Male Screenshot")
             TestMap.textmap.drawImageClipped(0, 0, image, 55, 80, 512, 512, 0)
         TestMap.textmap.flush()
         PtAtTimeCallback(self.key, 0, 999)
@@ -1250,10 +1250,10 @@ class xAvatarCustomization(ptModifier):
                 clothingName = "02_MTorso09_01"
             clothingList = avatar.avatar.getWardrobeClothingList()
             if clothingName not in clothingList:
-                print "adding Yeesha reward clothing %s to wardrobe" % (clothingName)
+                print("adding Yeesha reward clothing %s to wardrobe" % (clothingName))
                 avatar.avatar.addWardrobeClothingItem(clothingName,ptColor().white(),ptColor().black())
             else:
-                print "player already has Yeesha reward clothing, doing nothing"
+                print("player already has Yeesha reward clothing, doing nothing")
             folder = vault.getChronicleFolder()
             if type(folder) != type(None):
                 folder.removeNode(entry)
@@ -1308,12 +1308,12 @@ class xAvatarCustomization(ptModifier):
 
         if id == 999:
             newImage = TestMap.textmap.getImage()
-            basePath = PtGetUserPath() + U"\\Avatars\\"
+            basePath = PtGetUserPath() + "\\Avatars\\"
             if not PtCreateDir(basePath):
-                print U"xAvatarCustomization::OnTimer(): Unable to create \"" + basePath + "\" directory. Avatar pic is NOT saved."
+                print("xAvatarCustomization::OnTimer(): Unable to create \"" + basePath + "\" directory. Avatar pic is NOT saved.")
                 return
-            filename = basePath + unicode(PtGetLocalPlayer().getPlayerID()) + U".jpg"
-            print U"xAvatarCustomization::OnTimer(): Saving avatar pic to \"" + filename + U"\""
+            filename = basePath + str(PtGetLocalPlayer().getPlayerID()) + ".jpg"
+            print("xAvatarCustomization::OnTimer(): Saving avatar pic to \"" + filename + "\"")
             newImage.saveAsJPEG(filename, 90)
 
     def IUpdateAllControls(self):
@@ -1360,7 +1360,7 @@ class xAvatarCustomization(ptModifier):
         # get (or re-get) the closet
         TheCloset = ClothingCloset()
         # start from the top and go down Hair thru Feet (and Accessories)
-        for listboxID in TheCloset.keys():
+        for listboxID in list(TheCloset.keys()):
             # do the primary clothing listbox
             group = TheCloset[listboxID]
             # add the listbox class if we don't have it already
@@ -1392,7 +1392,7 @@ class xAvatarCustomization(ptModifier):
         "Gets whats being worn and sets the dialogs to show what we are wearing"
         # assumes that WornList is already filled out
         global listboxDict
-        for id in TheCloset.keys():
+        for id in list(TheCloset.keys()):
             # tell the listboxes to update themselves
             listboxDict[id].SetWhatWearing()
             listboxDict[id].UpdateScrollArrows()
@@ -1528,7 +1528,7 @@ class xAvatarCustomization(ptModifier):
                 resetVal = avatar.avatar.getMorph("FFace",knobID)
             else:
                 resetVal = avatar.avatar.getMorph("MFace",knobID)
-            print resetVal  #This is a hack... for some reason I get errors without it!
+            print(resetVal)  #This is a hack... for some reason I get errors without it!
             morphKnob.setValue(self.IMorphToSlider(resetVal))
             PtShowDialog(xVisitorUtils.kVisitorNagDialog)
             return
@@ -1634,13 +1634,13 @@ class xAvatarCustomization(ptModifier):
                 descbox = ptGUIControlTextBox(AvCustGUI.dialog.getControlFromTag(kClothingDesc))
                 descbox.setStringW(wornitem.description)
                 colorbar1 = ptGUIControlTextBox(AvCustGUI.dialog.getControlFromTag(kColorbarName1))
-                if wornitem.colorlabel1 == U"":
+                if wornitem.colorlabel1 == "":
                     self.IHideColorPicker(kColor1ClickMap)
                 else:
                     self.IShowColorPicker(kColor1ClickMap)
                     colorbar1.setStringW(wornitem.colorlabel1)
                 colorbar2 = ptGUIControlTextBox(AvCustGUI.dialog.getControlFromTag(kColorbarName2))
-                if wornitem.colorlabel2 == U"":
+                if wornitem.colorlabel2 == "":
                     self.IHideColorPicker(kColor2ClickMap)
                 else:
                     self.IShowColorPicker(kColor2ClickMap)
@@ -1850,10 +1850,10 @@ class ClothingItem:
         self.tintValue2 = 1.0
         self.name = ""
         self.type = 0
-        self.description = U""
+        self.description = ""
         self.thumbnail = 0
-        self.colorlabel1 = U"Color 1"
-        self.colorlabel2 = U"Color 2"
+        self.colorlabel1 = "Color 1"
+        self.colorlabel2 = "Color 2"
         self.accessories = []
         self.meshicon = 0 # is this a category icon and not real clothing?
         self.logofor = "" # is this clothing item a logo for another?
@@ -1885,7 +1885,7 @@ class ClothingItem:
                 if clothing[2] != "":
                     self.description = GetItemName(clothing[2])
             except:
-                self.description = U"*"+unicode(clothing[2])+U"*"
+                self.description = "*"+str(clothing[2])+"*"
             self.thumbnail = clothing[3]
             # determine more from the custom string
             if len(clothing[4]) > 0:
@@ -1906,17 +1906,17 @@ class ClothingItem:
                             if rs != "":
                                 self.colorlabel1 = GetItemName(rs)
                             else:
-                                self.colorlabel1 = U""
+                                self.colorlabel1 = ""
                         except KeyError:
-                            self.colorlabel1 = U"*"+unicode(rs)+U"*"
+                            self.colorlabel1 = "*"+str(rs)+"*"
                     elif ls == "colorlabel2":
                         try:
                             if rs != "":
                                 self.colorlabel2 = GetItemName(rs)
                             else:
-                                self.colorlabel2 = U""
+                                self.colorlabel2 = ""
                         except KeyError:
-                            self.colorlabel2 = U"*"+unicode(rs)+U"*"
+                            self.colorlabel2 = "*"+str(rs)+"*"
                     elif ls == "saturationlayer1":
                         self.tintSaturation1 = string.atof(rs)
                     elif ls == "saturationlayer2":
@@ -2223,17 +2223,17 @@ class ClothingCloset:
         return len(self.clothingGroups)
 
     def keys(self):
-        return self.clothingGroups.keys()
+        return list(self.clothingGroups.keys())
 
     def findGroup(self,clothing_type):
-        for group in self.clothingGroups.values():
+        for group in list(self.clothingGroups.values()):
             if group.clothingType == clothing_type:
                 return group
         return None
 
     def findClothingItem(self,finditem):
         "find the clothing item in the closet, return group and index"
-        for group in self.clothingGroups.values():
+        for group in list(self.clothingGroups.values()):
             # search through the normal clothing
             for idx in range(len(group)):
                 if group[idx].name == finditem.name:
@@ -2246,7 +2246,7 @@ class ClothingCloset:
     
     def getItemByName(self,itemName):
         "return the clothing item with the desired name"
-        for group in self.clothingGroups.values():
+        for group in list(self.clothingGroups.values()):
             # search through the normal clothing
             for idx in range(len(group)):
                 if group[idx].name == itemName:

@@ -6,8 +6,8 @@ import struct
 import sys
 
 try:
-    import dbm
-    _dbmerror = dbm.error
+    import dbm.ndbm
+    _dbmerror = dbm.ndbm.error
 except ImportError:
     dbm = None
     # just some sort of valid exception which might be raised in the
@@ -32,7 +32,7 @@ def whichdb(filename):
         f = open(filename + os.extsep + "pag", "rb")
         f.close()
         # dbm linked with gdbm on OS/2 doesn't have .dir file
-        if not (dbm.library == "GNU gdbm" and sys.platform == "os2emx"):
+        if not (dbm.ndbm.library == "GNU gdbm" and sys.platform == "os2emx"):
             f = open(filename + os.extsep + "dir", "rb")
             f.close()
         return "dbm"
@@ -46,7 +46,7 @@ def whichdb(filename):
             # kind of overkill, but since we are dealing with emulations
             # it seems like a prudent step
             if dbm is not None:
-                d = dbm.open(filename)
+                d = dbm.ndbm.open(filename)
                 d.close()
                 return "dbm"
         except (IOError, _dbmerror):
@@ -114,4 +114,4 @@ def whichdb(filename):
 
 if __name__ == "__main__":
     for filename in sys.argv[1:]:
-        print whichdb(filename) or "UNKNOWN", filename
+        print(whichdb(filename) or "UNKNOWN", filename)
