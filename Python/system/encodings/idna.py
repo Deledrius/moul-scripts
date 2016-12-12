@@ -7,8 +7,8 @@ from unicodedata import ucd_3_2_0 as unicodedata
 dots = re.compile("[\u002E\u3002\uFF0E\uFF61]")
 
 # IDNA section 5
-ace_prefix = "xn--"
-uace_prefix = str(ace_prefix, "ascii")
+ace_prefix = b"xn--"
+sace_prefix = "xn--"
 
 # This assumes query strings, so AllowUnassigned is true
 def nameprep(label):
@@ -38,7 +38,7 @@ def nameprep(label):
             raise UnicodeError("Invalid character %r" % c)
 
     # Check bidi
-    RandAL = list(map(stringprep.in_table_d1, label))
+    RandAL = [stringprep.in_table_d1(x) for x in label]
     for c in RandAL:
         if c:
             # There is a RandAL char in the string. Must perform further
@@ -47,7 +47,7 @@ def nameprep(label):
             # This is table C.8, which was already checked
             # 2) If a string contains any RandALCat character, the string
             # MUST NOT contain any LCat character.
-            if list(filter(stringprep.in_table_d2, label)):
+            if any(stringprep.in_table_d2(x) for x in label):
                 raise UnicodeError("Violation of BIDI requirement 2")
 
             # 3) If a string contains any RandALCat character, a
@@ -88,7 +88,7 @@ def ToASCII(label):
         raise UnicodeError("label empty or too long")
 
     # Step 5: Check ACE prefix
-    if label.startswith(uace_prefix):
+    if label.startswith(sace_prefix):
         raise UnicodeError("Label starts with ACE prefix")
 
     # Step 6: Encode with PUNYCODE
@@ -104,7 +104,7 @@ def ToASCII(label):
 
 def ToUnicode(label):
     # Step 1: Check for ASCII
-    if isinstance(label, str):
+    if isinstance(label, bytes):
         pure_ascii = True
     else:
         try:
@@ -135,7 +135,7 @@ def ToUnicode(label):
 
     # Step 7: Compare the result of step 6 with the one of step 3
     # label2 will already be in lower case.
-    if label.lower() != label2:
+    if str(label, "ascii").lower() != str(label2, "ascii"):
         raise UnicodeError("IDNA does not round-trip", label, label2)
 
     # Step 8: return the result of step 5
@@ -144,28 +144,44 @@ def ToUnicode(label):
 ### Codec APIs
 
 class Codec(codecs.Codec):
-    def encode(self,input,errors='strict'):
+    def encode(self, input, errors='strict'):
 
         if errors != 'strict':
             # IDNA is quite clear that implementations must be strict
             raise UnicodeError("unsupported error handling "+errors)
 
         if not input:
-            return "", 0
+            return b'', 0
 
-        result = []
+        try:
+            result = input.encode('ascii')
+        except UnicodeEncodeError:
+            pass
+        else:
+            # ASCII name: fast path
+            labels = result.split(b'.')
+            for label in labels[:-1]:
+                if not (0 < len(label) < 64):
+                    raise UnicodeError("label empty or too long")
+            if len(labels[-1]) >= 64:
+                raise UnicodeError("label too long")
+            return result, len(input)
+
+        result = bytearray()
         labels = dots.split(input)
-        if labels and len(labels[-1])==0:
-            trailing_dot = '.'
+        if labels and not labels[-1]:
+            trailing_dot = b'.'
             del labels[-1]
         else:
-            trailing_dot = ''
+            trailing_dot = b''
         for label in labels:
-            result.append(ToASCII(label))
-        # Join with U+002E
-        return ".".join(result)+trailing_dot, len(input)
+            if result:
+                # Join with U+002E
+                result.extend(b'.')
+            result.extend(ToASCII(label))
+        return bytes(result+trailing_dot), len(input)
 
-    def decode(self,input,errors='strict'):
+    def decode(self, input, errors='strict'):
 
         if errors != 'strict':
             raise UnicodeError("Unsupported error handling "+errors)
@@ -174,13 +190,18 @@ class Codec(codecs.Codec):
             return "", 0
 
         # IDNA allows decoding to operate on Unicode strings, too.
-        if isinstance(input, str):
-            labels = dots.split(input)
-        else:
-            # Must be ASCII string
-            input = str(input)
-            str(input, "ascii")
-            labels = input.split(".")
+        if not isinstance(input, bytes):
+            # XXX obviously wrong, see #3232
+            input = bytes(input)
+
+        if ace_prefix not in input:
+            # Fast path
+            try:
+                return input.decode('ascii'), len(input)
+            except UnicodeDecodeError:
+                pass
+
+        labels = input.split(b".")
 
         if labels and len(labels[-1]) == 0:
             trailing_dot = '.'
@@ -201,32 +222,33 @@ class IncrementalEncoder(codecs.BufferedIncrementalEncoder):
             raise UnicodeError("unsupported error handling "+errors)
 
         if not input:
-            return ("", 0)
+            return (b'', 0)
 
         labels = dots.split(input)
-        trailing_dot = ''
+        trailing_dot = b''
         if labels:
             if not labels[-1]:
-                trailing_dot = '.'
+                trailing_dot = b'.'
                 del labels[-1]
             elif not final:
                 # Keep potentially unfinished label until the next call
                 del labels[-1]
                 if labels:
-                    trailing_dot = '.'
+                    trailing_dot = b'.'
 
-        result = []
+        result = bytearray()
         size = 0
         for label in labels:
-            result.append(ToASCII(label))
             if size:
+                # Join with U+002E
+                result.extend(b'.')
                 size += 1
+            result.extend(ToASCII(label))
             size += len(label)
 
-        # Join with U+002E
-        result = ".".join(result) + trailing_dot
+        result += trailing_dot
         size += len(trailing_dot)
-        return (result, size)
+        return (bytes(result), size)
 
 class IncrementalDecoder(codecs.BufferedIncrementalDecoder):
     def _buffer_decode(self, input, errors, final):
@@ -241,8 +263,7 @@ class IncrementalDecoder(codecs.BufferedIncrementalDecoder):
             labels = dots.split(input)
         else:
             # Must be ASCII string
-            input = str(input)
-            str(input, "ascii")
+            input = str(input, "ascii")
             labels = input.split(".")
 
         trailing_dot = ''

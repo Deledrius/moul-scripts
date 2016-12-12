@@ -91,7 +91,7 @@ month_name = _localized_month('%B')
 month_abbr = _localized_month('%b')
 
 # Constants for weekdays
-(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY) = list(range(7))
+(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY) = range(7)
 
 
 def isleap(year):
@@ -142,7 +142,7 @@ class Calendar(object):
 
     def iterweekdays(self):
         """
-        Return a iterator for one week of weekday numbers starting with the
+        Return an iterator for one week of weekday numbers starting with the
         configured first one.
         """
         for i in range(self.firstweekday, self.firstweekday + 7):
@@ -161,7 +161,11 @@ class Calendar(object):
         oneday = datetime.timedelta(days=1)
         while True:
             yield date
-            date += oneday
+            try:
+                date += oneday
+            except OverflowError:
+                # Adding one day could fail after datetime.MAXYEAR
+                break
             if date.month != month and date.weekday() == self.firstweekday:
                 break
 
@@ -216,7 +220,7 @@ class Calendar(object):
     def yeardatescalendar(self, year, width=3):
         """
         Return the data for the specified year ready for formatting. The return
-        value is a list of month rows. Each month row contains upto width months.
+        value is a list of month rows. Each month row contains up to width months.
         Each month contains between 4 and 6 weeks and each week contains 1-7
         days. Days are datetime.date objects.
         """
@@ -342,7 +346,7 @@ class TextCalendar(Calendar):
         header = self.formatweekheader(w)
         for (i, row) in enumerate(self.yeardays2calendar(theyear, m)):
             # months in this row
-            months = list(range(m*i+1, min(m*(i+1)+1, 13)))
+            months = range(m*i+1, min(m*(i+1)+1, 13))
             a('\n'*l)
             names = (self.formatmonthname(theyear, k, colwidth, False)
                      for k in months)
@@ -447,7 +451,7 @@ class HTMLCalendar(Calendar):
         a('<tr><th colspan="%d" class="year">%s</th></tr>' % (width, theyear))
         for i in range(January, January+12, width):
             # months in this row
-            months = list(range(i, min(i+width, 13)))
+            months = range(i, min(i+width, 13))
             a('<tr>')
             for m in months:
                 a('<td>')
@@ -481,7 +485,7 @@ class HTMLCalendar(Calendar):
         return ''.join(v).encode(encoding, "xmlcharrefreplace")
 
 
-class TimeEncoding:
+class different_locale:
     def __init__(self, locale):
         self.locale = locale
 
@@ -508,21 +512,17 @@ class LocaleTextCalendar(TextCalendar):
         self.locale = locale
 
     def formatweekday(self, day, width):
-        with TimeEncoding(self.locale) as encoding:
+        with different_locale(self.locale):
             if width >= 9:
                 names = day_name
             else:
                 names = day_abbr
             name = names[day]
-            if encoding is not None:
-                name = name.decode(encoding)
             return name[:width].center(width)
 
     def formatmonthname(self, theyear, themonth, width, withyear=True):
-        with TimeEncoding(self.locale) as encoding:
+        with different_locale(self.locale):
             s = month_name[themonth]
-            if encoding is not None:
-                s = s.decode(encoding)
             if withyear:
                 s = "%s %r" % (s, theyear)
             return s.center(width)
@@ -542,17 +542,13 @@ class LocaleHTMLCalendar(HTMLCalendar):
         self.locale = locale
 
     def formatweekday(self, day):
-        with TimeEncoding(self.locale) as encoding:
+        with different_locale(self.locale):
             s = day_abbr[day]
-            if encoding is not None:
-                s = s.decode(encoding)
             return '<th class="%s">%s</th>' % (self.cssclasses[day], s)
 
     def formatmonthname(self, theyear, themonth, withyear=True):
-        with TimeEncoding(self.locale) as encoding:
+        with different_locale(self.locale):
             s = month_name[themonth]
-            if encoding is not None:
-                s = s.decode(encoding)
             if withyear:
                 s = '%s %s' % (s, theyear)
             return '<tr><th colspan="7" class="month">%s</th></tr>' % s
@@ -564,10 +560,6 @@ c = TextCalendar()
 firstweekday = c.getfirstweekday
 
 def setfirstweekday(firstweekday):
-    try:
-        firstweekday.__index__
-    except AttributeError:
-        raise IllegalWeekdayError(firstweekday)
     if not MONDAY <= firstweekday <= SUNDAY:
         raise IllegalWeekdayError(firstweekday)
     c.firstweekday = firstweekday
@@ -648,7 +640,7 @@ def main(args):
     parser.add_option(
         "-e", "--encoding",
         dest="encoding", default=None,
-        help="Encoding to use for output"
+        help="Encoding to use for output."
     )
     parser.add_option(
         "-t", "--type",
@@ -674,10 +666,11 @@ def main(args):
         if encoding is None:
             encoding = sys.getdefaultencoding()
         optdict = dict(encoding=encoding, css=options.css)
+        write = sys.stdout.buffer.write
         if len(args) == 1:
-            print(cal.formatyearpage(datetime.date.today().year, **optdict))
+            write(cal.formatyearpage(datetime.date.today().year, **optdict))
         elif len(args) == 2:
-            print(cal.formatyearpage(int(args[1]), **optdict))
+            write(cal.formatyearpage(int(args[1]), **optdict))
         else:
             parser.error("incorrect number of arguments")
             sys.exit(1)
@@ -699,9 +692,11 @@ def main(args):
         else:
             parser.error("incorrect number of arguments")
             sys.exit(1)
+        write = sys.stdout.write
         if options.encoding:
             result = result.encode(options.encoding)
-        print(result)
+            write = sys.stdout.buffer.write
+        write(result)
 
 
 if __name__ == "__main__":

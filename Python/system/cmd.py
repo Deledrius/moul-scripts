@@ -40,12 +40,9 @@ The data members `self.doc_header', `self.misc_header', and
 `self.undoc_header' set the headers used for the help function's
 listings of documented functions, miscellaneous topics, and undocumented
 functions respectively.
-
-These interpreters use raw_input; thus, if the readline module is loaded,
-they automatically support Emacs-like command history and editing features.
 """
 
-import string
+import string, sys
 
 __all__ = ["Cmd"]
 
@@ -87,7 +84,6 @@ class Cmd:
         sys.stdin and sys.stdout are used.
 
         """
-        import sys
         if stdin is not None:
             self.stdin = stdin
         else:
@@ -209,6 +205,8 @@ class Cmd:
         if cmd is None:
             return self.default(line)
         self.lastcmd = line
+        if line == 'EOF' :
+            self.lastcmd = ''
         if cmd == '':
             return self.default(line)
         else:
@@ -292,6 +290,7 @@ class Cmd:
         return list(commands | topics)
 
     def do_help(self, arg):
+        'List available commands with "help" or detailed help with "help cmd".'
         if arg:
             # XXX check arg syntax
             try:
@@ -353,11 +352,12 @@ class Cmd:
         if not list:
             self.stdout.write("<empty>\n")
             return
+
         nonstrings = [i for i in range(len(list))
                         if not isinstance(list[i], str)]
         if nonstrings:
-            raise TypeError("list[i] not a string for i in %s" %
-                              ", ".join(map(str, nonstrings)))
+            raise TypeError("list[i] not a string for i in %s"
+                            % ", ".join(map(str, nonstrings)))
         size = len(list)
         if size == 1:
             self.stdout.write('%s\n'%str(list[0]))

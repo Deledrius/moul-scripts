@@ -1,35 +1,23 @@
 """Class for printing reports on profiled python code."""
 
-# Class for printing reports on profiled python code. rev 1.0  4/1/94
-#
+# Written by James Roskind
 # Based on prior profile module by Sjoerd Mullender...
 #   which was hacked somewhat by: Guido van Rossum
-#
-# see profile.py for more info.
 
-# Copyright 1994, by InfoSeek Corporation, all rights reserved.
-# Written by James Roskind
+# Copyright Disney Enterprises, Inc.  All Rights Reserved.
+# Licensed to PSF under a Contributor Agreement
 #
-# Permission to use, copy, modify, and distribute this Python software
-# and its associated documentation for any purpose (subject to the
-# restriction in the following sentence) without fee is hereby granted,
-# provided that the above copyright notice appears in all copies, and
-# that both that copyright notice and this permission notice appear in
-# supporting documentation, and that the name of InfoSeek not be used in
-# advertising or publicity pertaining to distribution of the software
-# without specific, written prior permission.  This permission is
-# explicitly restricted to the copying and modification of the software
-# to remain in Python, compiled Python, or other languages (such as C)
-# wherein the modified or derived code is exclusively imported into a
-# Python module.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# INFOSEEK CORPORATION DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
-# SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
-# FITNESS. IN NO EVENT SHALL INFOSEEK CORPORATION BE LIABLE FOR ANY
-# SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
-# RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-# CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied.  See the License for the specific language
+# governing permissions and limitations under the License.
 
 
 import sys
@@ -71,20 +59,8 @@ class Stats:
                             print_stats(5).print_callers(5)
     """
 
-    def __init__(self, *args, **kwds):
-        # I can't figure out how to explictly specify a stream keyword arg
-        # with *args:
-        #   def __init__(self, *args, stream=sys.stdout): ...
-        # so I use **kwds and sqauwk if something unexpected is passed in.
-        self.stream = sys.stdout
-        if "stream" in kwds:
-            self.stream = kwds["stream"]
-            del kwds["stream"]
-        if kwds:
-            keys = list(kwds.keys())
-            keys.sort()
-            extras = ", ".join(["%s=%s" % (k, kwds[k]) for k in keys])
-            raise ValueError("unrecognized keyword args: %s" % extras)
+    def __init__(self, *args, stream=None):
+        self.stream = stream or sys.stdout
         if not len(args):
             arg = None
         else:
@@ -101,98 +77,97 @@ class Stats:
         self.total_calls = 0
         self.prim_calls = 0
         self.max_name_len = 0
-        self.top_level = {}
+        self.top_level = set()
         self.stats = {}
         self.sort_arg_dict = {}
         self.load_stats(arg)
-        trouble = 1
         try:
             self.get_top_level_stats()
-            trouble = 0
-        finally:
-            if trouble:
-                print("Invalid timing data", end=' ', file=self.stream)
-                if self.files: print(self.files[-1], end=' ', file=self.stream)
-                print(file=self.stream)
+        except Exception:
+            print("Invalid timing data %s" %
+                  (self.files[-1] if self.files else ''), file=self.stream)
+            raise
 
     def load_stats(self, arg):
-        if not arg:  self.stats = {}
+        if arg is None:
+            self.stats = {}
+            return
         elif isinstance(arg, str):
-            f = open(arg, 'rb')
-            self.stats = marshal.load(f)
-            f.close()
+            with open(arg, 'rb') as f:
+                self.stats = marshal.load(f)
             try:
                 file_stats = os.stat(arg)
                 arg = time.ctime(file_stats.st_mtime) + "    " + arg
             except:  # in case this is not unix
                 pass
-            self.files = [ arg ]
+            self.files = [arg]
         elif hasattr(arg, 'create_stats'):
             arg.create_stats()
             self.stats = arg.stats
             arg.stats = {}
         if not self.stats:
-            raise TypeError("Cannot create or construct a %r object from '%r''" % (
-                              self.__class__, arg))
+            raise TypeError("Cannot create or construct a %r object from %r"
+                            % (self.__class__, arg))
         return
 
     def get_top_level_stats(self):
-        for func, (cc, nc, tt, ct, callers) in list(self.stats.items()):
+        for func, (cc, nc, tt, ct, callers) in self.stats.items():
             self.total_calls += nc
             self.prim_calls  += cc
             self.total_tt    += tt
             if ("jprofile", 0, "profiler") in callers:
-                self.top_level[func] = None
+                self.top_level.add(func)
             if len(func_std_string(func)) > self.max_name_len:
                 self.max_name_len = len(func_std_string(func))
 
     def add(self, *arg_list):
-        if not arg_list: return self
-        if len(arg_list) > 1: self.add(*arg_list[1:])
-        other = arg_list[0]
-        if type(self) != type(other) or self.__class__ != other.__class__:
-            other = Stats(other)
-        self.files += other.files
-        self.total_calls += other.total_calls
-        self.prim_calls += other.prim_calls
-        self.total_tt += other.total_tt
-        for func in other.top_level:
-            self.top_level[func] = None
+        if not arg_list:
+            return self
+        for item in reversed(arg_list):
+            if type(self) != type(item):
+                item = Stats(item)
+            self.files += item.files
+            self.total_calls += item.total_calls
+            self.prim_calls += item.prim_calls
+            self.total_tt += item.total_tt
+            for func in item.top_level:
+                self.top_level.add(func)
 
-        if self.max_name_len < other.max_name_len:
-            self.max_name_len = other.max_name_len
+            if self.max_name_len < item.max_name_len:
+                self.max_name_len = item.max_name_len
 
-        self.fcn_list = None
+            self.fcn_list = None
 
-        for func, stat in other.stats.items():
-            if func in self.stats:
-                old_func_stat = self.stats[func]
-            else:
-                old_func_stat = (0, 0, 0, 0, {},)
-            self.stats[func] = add_func_stats(old_func_stat, stat)
+            for func, stat in item.stats.items():
+                if func in self.stats:
+                    old_func_stat = self.stats[func]
+                else:
+                    old_func_stat = (0, 0, 0, 0, {},)
+                self.stats[func] = add_func_stats(old_func_stat, stat)
         return self
 
     def dump_stats(self, filename):
         """Write the profile data to a file we know how to load back."""
-        f = file(filename, 'wb')
-        try:
+        with open(filename, 'wb') as f:
             marshal.dump(self.stats, f)
-        finally:
-            f.close()
 
     # list the tuple indices and directions for sorting,
     # along with some printable description
     sort_arg_dict_default = {
               "calls"     : (((1,-1),              ), "call count"),
+              "ncalls"    : (((1,-1),              ), "call count"),
+              "cumtime"   : (((3,-1),              ), "cumulative time"),
               "cumulative": (((3,-1),              ), "cumulative time"),
               "file"      : (((4, 1),              ), "file name"),
+              "filename"  : (((4, 1),              ), "file name"),
               "line"      : (((5, 1),              ), "line number"),
               "module"    : (((4, 1),              ), "file name"),
               "name"      : (((6, 1),              ), "function name"),
               "nfl"       : (((6, 1),(4, 1),(5, 1),), "name/file/line"),
-              "pcalls"    : (((0,-1),              ), "call count"),
+              "pcalls"    : (((0,-1),              ), "primitive call count"),
               "stdname"   : (((7, 1),              ), "standard name"),
               "time"      : (((2,-1),              ), "internal time"),
+              "tottime"   : (((2,-1),              ), "internal time"),
               }
 
     def get_sort_arg_defs(self):
@@ -270,9 +245,9 @@ class Stats:
             else:
                 newstats[newfunc] = (cc, nc, tt, ct, newcallers)
         old_top = self.top_level
-        self.top_level = new_top = {}
+        self.top_level = new_top = set()
         for func in old_top:
-            new_top[func_strip_path(func)] = None
+            new_top.add(func_strip_path(func))
 
         self.max_name_len = max_name_len
 
@@ -281,7 +256,8 @@ class Stats:
         return self
 
     def calc_callees(self):
-        if self.all_callees: return
+        if self.all_callees:
+            return
         self.all_callees = all_callees = {}
         for func, (cc, nc, tt, ct, callers) in self.stats.items():
             if not func in all_callees:
@@ -351,7 +327,8 @@ class Stats:
     def print_stats(self, *amount):
         for filename in self.files:
             print(filename, file=self.stream)
-        if self.files: print(file=self.stream)
+        if self.files:
+            print(file=self.stream)
         indent = ' ' * 8
         for func in self.top_level:
             print(indent, func_get_function_name(func), file=self.stream)
@@ -413,8 +390,7 @@ class Stats:
         if not call_dict:
             print(file=self.stream)
             return
-        clist = list(call_dict.keys())
-        clist.sort()
+        clist = sorted(call_dict.keys())
         indent = ""
         for func in clist:
             name = func_std_string(func)
@@ -438,7 +414,7 @@ class Stats:
         print('   ncalls  tottime  percall  cumtime  percall', end=' ', file=self.stream)
         print('filename:lineno(function)', file=self.stream)
 
-    def print_line(self, func):  # hack : should print percentages
+    def print_line(self, func):  # hack: should print percentages
         cc, nc, tt, ct, callers = self.stats[func]
         c = str(nc)
         if nc != cc:
@@ -448,12 +424,12 @@ class Stats:
         if nc == 0:
             print(' '*8, end=' ', file=self.stream)
         else:
-            print(f8(float(tt)/nc), end=' ', file=self.stream)
+            print(f8(tt/nc), end=' ', file=self.stream)
         print(f8(ct), end=' ', file=self.stream)
         if cc == 0:
             print(' '*8, end=' ', file=self.stream)
         else:
-            print(f8(float(ct)/cc), end=' ', file=self.stream)
+            print(f8(ct/cc), end=' ', file=self.stream)
         print(func_std_string(func), file=self.stream)
 
 class TupleComp:
@@ -476,6 +452,7 @@ class TupleComp:
             if l > r:
                 return direction
         return 0
+
 
 #**************************************************************************
 # func_name is a triple (file:string, line:int, name:string)
@@ -631,8 +608,8 @@ if __name__ == '__main__':
             if line:
                 try:
                     self.stats = Stats(line)
-                except IOError as args:
-                    print(args[1], file=self.stream)
+                except OSError as err:
+                    print(err.args[1], file=self.stream)
                     return
                 except Exception as err:
                     print(err.__class__.__name__ + ':', err, file=self.stream)
@@ -697,13 +674,14 @@ if __name__ == '__main__':
                 return stop
             return None
 
-    import sys
     if len(sys.argv) > 1:
         initprofile = sys.argv[1]
     else:
         initprofile = None
     try:
         browser = ProfileBrowser(initprofile)
+        for profile in sys.argv[2:]:
+            browser.do_add(profile)
         print("Welcome to the profile statistics browser.", file=browser.stream)
         browser.cmdloop()
         print("Goodbye.", file=browser.stream)

@@ -12,7 +12,8 @@ import codecs
 ### Codec APIs
 
 def encode(input, errors='strict'):
-    return (codecs.BOM_UTF8 + codecs.utf_8_encode(input, errors)[0], len(input))
+    return (codecs.BOM_UTF8 + codecs.utf_8_encode(input, errors)[0],
+            len(input))
 
 def decode(input, errors='strict'):
     prefix = 0
@@ -30,7 +31,8 @@ class IncrementalEncoder(codecs.IncrementalEncoder):
     def encode(self, input, final=False):
         if self.first:
             self.first = 0
-            return codecs.BOM_UTF8 + codecs.utf_8_encode(input, self.errors)[0]
+            return codecs.BOM_UTF8 + \
+                   codecs.utf_8_encode(input, self.errors)[0]
         else:
             return codecs.utf_8_encode(input, self.errors)[0]
 
@@ -47,7 +49,7 @@ class IncrementalEncoder(codecs.IncrementalEncoder):
 class IncrementalDecoder(codecs.BufferedIncrementalDecoder):
     def __init__(self, errors='strict'):
         codecs.BufferedIncrementalDecoder.__init__(self, errors)
-        self.first = True
+        self.first = 1
 
     def _buffer_decode(self, input, errors, final):
         if self.first:
@@ -57,17 +59,28 @@ class IncrementalDecoder(codecs.BufferedIncrementalDecoder):
                     # => try again on the next call
                     return ("", 0)
                 else:
-                    self.first = None
+                    self.first = 0
             else:
-                self.first = None
+                self.first = 0
                 if input[:3] == codecs.BOM_UTF8:
-                    (output, consumed) = codecs.utf_8_decode(input[3:], errors, final)
+                    (output, consumed) = \
+                       codecs.utf_8_decode(input[3:], errors, final)
                     return (output, consumed+3)
         return codecs.utf_8_decode(input, errors, final)
 
     def reset(self):
         codecs.BufferedIncrementalDecoder.reset(self)
-        self.first = True
+        self.first = 1
+
+    def getstate(self):
+        state = codecs.BufferedIncrementalDecoder.getstate(self)
+        # state[1] must be 0 here, as it isn't passed along to the caller
+        return (state[0], self.first)
+
+    def setstate(self, state):
+        # state[1] will be ignored by BufferedIncrementalDecoder.setstate()
+        codecs.BufferedIncrementalDecoder.setstate(self, state)
+        self.first = state[1]
 
 class StreamWriter(codecs.StreamWriter):
     def reset(self):

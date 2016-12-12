@@ -1,4 +1,3 @@
-# -*- coding: iso-8859-1 -*-
 """A lexical analyzer class for simple shell-like syntaxes."""
 
 # Module and documentation by Eric S. Raymond, 21 Dec 1998
@@ -7,16 +6,14 @@
 # Posix compliance, split(), string arguments, and
 # iterator interface by Gustavo Niemeyer, April 2003.
 
-import os.path
+import os
+import re
 import sys
 from collections import deque
 
-try:
-    from io import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
-__all__ = ["shlex", "split"]
+__all__ = ["shlex", "split", "quote"]
 
 class shlex:
     "A lexical analyzer class for simple shell-like syntaxes."
@@ -38,8 +35,8 @@ class shlex:
         self.wordchars = ('abcdfeghijklmnopqrstuvwxyz'
                           'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_')
         if self.posix:
-            self.wordchars += ('ﬂ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ¯˘˙˚¸˝˛ˇ'
-                               '¿¡¬√ƒ≈∆«»… ÀÃÕŒœ–—“”‘’÷ÿŸ⁄€‹›ﬁ')
+            self.wordchars += ('√ü√†√°√¢√£√§√•√¶√ß√®√©√™√´√¨√≠√Æ√Ø√∞√±√≤√≥√¥√µ√∂√∏√π√∫√ª√º√Ω√æ√ø'
+                               '√Ä√Å√Ç√É√Ñ√Ö√Ü√á√à√â√ä√ã√å√ç√é√è√ê√ë√í√ì√î√ï√ñ√ò√ô√ö√õ√ú√ù√û')
         self.whitespace = ' \t\r\n'
         self.whitespace_split = False
         self.quotes = '\'"'
@@ -52,9 +49,6 @@ class shlex:
         self.token = ''
         self.filestack = deque()
         self.source = None
-        if self.debug:
-            print('shlex: reading from %s, line %d' \
-                  % (self.instream, self.lineno))
 
     def push_token(self, tok):
         "Push a token onto the stack popped by the get_token method"
@@ -278,15 +272,32 @@ def split(s, comments=False, posix=True):
         lex.commenters = ''
     return list(lex)
 
-if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        lexer = shlex()
-    else:
-        file = sys.argv[1]
-        lexer = shlex(open(file), file)
+
+_find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII).search
+
+def quote(s):
+    """Return a shell-escaped version of the string *s*."""
+    if not s:
+        return "''"
+    if _find_unsafe(s) is None:
+        return s
+
+    # use single quotes, and put single quotes into double quotes
+    # the string $'b is then quoted as '$'"'"'b'
+    return "'" + s.replace("'", "'\"'\"'") + "'"
+
+
+def _print_tokens(lexer):
     while 1:
         tt = lexer.get_token()
-        if tt:
-            print("Token: " + repr(tt))
-        else:
+        if not tt:
             break
+        print("Token: " + repr(tt))
+
+if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        _print_tokens(shlex())
+    else:
+        fn = sys.argv[1]
+        with open(fn) as f:
+            _print_tokens(shlex(f, fn))

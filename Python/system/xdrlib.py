@@ -5,10 +5,8 @@ See: RFC 1014
 """
 
 import struct
-try:
-    from io import StringIO as _StringIO
-except ImportError:
-    from io import StringIO as _StringIO
+from io import BytesIO
+from functools import wraps
 
 __all__ = ["Error", "Packer", "Unpacker", "ConversionError"]
 
@@ -16,7 +14,7 @@ __all__ = ["Error", "Packer", "Unpacker", "ConversionError"]
 class Error(Exception):
     """Exception class for this module. Use:
 
-    except xdrlib.Error, var:
+    except xdrlib.Error as var:
         # var has the Error instance for the exception
 
     Public ivars:
@@ -34,6 +32,16 @@ class Error(Exception):
 class ConversionError(Error):
     pass
 
+def raise_conversion_error(function):
+    """ Wrap any raised struct.errors in a ConversionError. """
+
+    @wraps(function)
+    def result(self, value):
+        try:
+            return function(self, value)
+        except struct.error as e:
+            raise ConversionError(e.args[0]) from None
+    return result
 
 
 class Packer:
@@ -43,45 +51,53 @@ class Packer:
         self.reset()
 
     def reset(self):
-        self.__buf = _StringIO()
+        self.__buf = BytesIO()
 
     def get_buffer(self):
         return self.__buf.getvalue()
     # backwards compatibility
     get_buf = get_buffer
 
+    @raise_conversion_error
     def pack_uint(self, x):
         self.__buf.write(struct.pack('>L', x))
 
-    pack_int = pack_uint
+    @raise_conversion_error
+    def pack_int(self, x):
+        self.__buf.write(struct.pack('>l', x))
+
     pack_enum = pack_int
 
     def pack_bool(self, x):
-        if x: self.__buf.write('\0\0\0\1')
-        else: self.__buf.write('\0\0\0\0')
+        if x: self.__buf.write(b'\0\0\0\1')
+        else: self.__buf.write(b'\0\0\0\0')
 
     def pack_uhyper(self, x):
-        self.pack_uint(x>>32 & 0xffffffff)
-        self.pack_uint(x & 0xffffffff)
+        try:
+            self.pack_uint(x>>32 & 0xffffffff)
+        except (TypeError, struct.error) as e:
+            raise ConversionError(e.args[0]) from None
+        try:
+            self.pack_uint(x & 0xffffffff)
+        except (TypeError, struct.error) as e:
+            raise ConversionError(e.args[0]) from None
 
     pack_hyper = pack_uhyper
 
+    @raise_conversion_error
     def pack_float(self, x):
-        try: self.__buf.write(struct.pack('>f', x))
-        except struct.error as msg:
-            raise ConversionError(msg)
+        self.__buf.write(struct.pack('>f', x))
 
+    @raise_conversion_error
     def pack_double(self, x):
-        try: self.__buf.write(struct.pack('>d', x))
-        except struct.error as msg:
-            raise ConversionError(msg)
+        self.__buf.write(struct.pack('>d', x))
 
     def pack_fstring(self, n, s):
         if n < 0:
             raise ValueError('fstring size must be nonnegative')
         data = s[:n]
         n = ((n+3)//4)*4
-        data = data + (n - len(data)) * '\0'
+        data = data + (n - len(data)) * b'\0'
         self.__buf.write(data)
 
     pack_fopaque = pack_fstring
@@ -142,11 +158,7 @@ class Unpacker:
         data = self.__buf[i:j]
         if len(data) < 4:
             raise EOFError
-        x = struct.unpack('>L', data)[0]
-        try:
-            return int(x)
-        except OverflowError:
-            return x
+        return struct.unpack('>L', data)[0]
 
     def unpack_int(self):
         i = self.__pos
