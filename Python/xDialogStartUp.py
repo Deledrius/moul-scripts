@@ -573,7 +573,10 @@ class xDialogStartUp(ptResponder):
             else:
                 ageInfo.setAgeFilename("AvatarCustomization")
             self.ageLink.setAgeInfo(ageInfo)
-            self.ageLink.setLinkingRules(PtLinkingRules.kOwnedBook)
+            if vault.getOwnedAgeLink(ageInfo):
+                self.ageLink.setLinkingRules(PtLinkingRules.kOwnedBook)
+            else:
+                self.ageLink.setLinkingRules(PtLinkingRules.kOriginalBook)
 
             PtDebugPrint("Linking to {}".format(self.ageLink.getAgeInfo().getAgeFilename()))
             respLinkOutSND.run(self.key)
