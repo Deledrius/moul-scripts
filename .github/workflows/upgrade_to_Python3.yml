@@ -1,0 +1,24 @@
+name: Python application
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  upgrade_to_Python3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Upgrade to Python3"
+        uses: cclauss/Upgrade-to-Python3@master
+      - name: Commit files
+        run: |
+              git config --local user.email "deledrius@gmail.com"
+              git config --local user.name "Joseph Davies"
+              git commit -m "Py3 Automated Upgrade" -a
+      - name: Push changes
+        uses: peter-evans/create-pull-request@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'py3-addendum'
